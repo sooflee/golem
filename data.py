@@ -6,69 +6,68 @@ tweak a rating or fix a group without touching the simulation code.
 
 Sources (fetched June 2026):
   - Groups: 2026 World Cup final draw (5 Dec 2025).
-  - Elo: worldfootballrankings.com / eloratings.net public top-50.
+  - Elo: eloratings.net (World Football Elo Ratings) — the canonical source, a
+    genuine /400 Elo so its rating gaps map correctly through engine.py's
+    win-expectancy. All 48 teams are real values (no estimates).
 
-Teams outside the public top-50 are marked ESTIMATE below. They are lower-ranked
-qualifiers whose exact Elo wasn't in the scraped table; the values are reasonable
-placeholders. Edit them if you have better numbers — the model is fully
-data-driven, so nothing else needs to change.
+Note on scale: eloratings.net runs higher than some other Elo sites (top team
+~2150 vs ~1870 elsewhere). That's fine — the engine is scale-free (it only uses
+rating gaps), and market calibration anchors the headline odds regardless.
 """
 
 # Host nations get a home-advantage bump (see engine.HOME_ADVANTAGE_ELO).
 HOSTS = {"Mexico", "Canada", "United States"}
 
-# World Football Elo ratings, ~June 2026.
+# World Football Elo ratings from eloratings.net, ~June 2026.
 ELO = {
-    # --- from public top-50 table ---
-    "Argentina": 1876.12,
-    "Spain": 1873.01,
-    "France": 1869.43,
-    "England": 1827.05,
-    "Portugal": 1766.18,
-    "Brazil": 1765.86,
-    "Morocco": 1757.29,
-    "Netherlands": 1751.10,
-    "Belgium": 1742.24,
-    "Germany": 1735.77,
-    "Croatia": 1712.24,
-    "Colombia": 1695.99,
-    "Mexico": 1687.48,
-    "Senegal": 1686.41,
-    "Uruguay": 1673.07,
-    "United States": 1671.23,
-    "Japan": 1661.58,
-    "Switzerland": 1650.06,
-    "Iran": 1619.58,
-    "Turkiye": 1605.73,
-    "Austria": 1597.40,
-    "Ecuador": 1596.48,
-    "South Korea": 1591.63,
-    "Australia": 1579.34,
-    "Algeria": 1571.03,
-    "Egypt": 1562.37,
-    "Canada": 1559.48,
-    "Norway": 1555.60,
-    "Ivory Coast": 1540.87,
-    "Panama": 1539.16,
-    "Paraguay": 1505.35,
-    "Czechia": 1505.74,
-    "Scotland": 1503.34,
-    "DR Congo": 1479.68,
-    "Tunisia": 1476.41,
-    "Uzbekistan": 1461.21,
-    "Sweden": 1509.79,
-    # --- ESTIMATEs (qualifiers outside the scraped top-50) ---
-    "Ghana": 1455.0,          # ESTIMATE
-    "Bosnia and Herzegovina": 1450.0,  # ESTIMATE
-    "Qatar": 1448.0,          # ESTIMATE
-    "South Africa": 1445.0,   # ESTIMATE
-    "Saudi Arabia": 1440.0,   # ESTIMATE
-    "Iraq": 1420.0,           # ESTIMATE
-    "Jordan": 1405.0,         # ESTIMATE
-    "New Zealand": 1400.0,    # ESTIMATE
-    "Cape Verde": 1398.0,     # ESTIMATE
-    "Curacao": 1335.0,        # ESTIMATE
-    "Haiti": 1330.0,          # ESTIMATE
+    "Spain": 2155,
+    "Argentina": 2114,
+    "France": 2062,
+    "England": 2021,
+    "Brazil": 1991,
+    "Portugal": 1986,
+    "Colombia": 1982,
+    "Netherlands": 1944,
+    "Ecuador": 1938,
+    "Germany": 1932,
+    "Norway": 1914,
+    "Turkiye": 1911,
+    "Croatia": 1911,
+    "Japan": 1906,
+    "Belgium": 1893,
+    "Uruguay": 1892,
+    "Switzerland": 1891,
+    "Mexico": 1875,
+    "Senegal": 1867,
+    "Paraguay": 1833,
+    "Austria": 1830,
+    "Morocco": 1827,
+    "Canada": 1788,
+    "Scotland": 1782,
+    "Australia": 1777,
+    "Iran": 1772,
+    "Algeria": 1760,
+    "South Korea": 1758,
+    "Czechia": 1740,
+    "Panama": 1730,
+    "United States": 1726,
+    "Uzbekistan": 1718,
+    "Sweden": 1712,
+    "Egypt": 1696,
+    "Ivory Coast": 1695,
+    "Jordan": 1680,
+    "DR Congo": 1661,
+    "Tunisia": 1628,
+    "Iraq": 1618,
+    "Bosnia and Herzegovina": 1595,
+    "Cape Verde": 1578,
+    "Saudi Arabia": 1569,
+    "New Zealand": 1562,
+    "Haiti": 1548,
+    "South Africa": 1518,
+    "Ghana": 1510,
+    "Curacao": 1434,
+    "Qatar": 1421,
 }
 
 # The 12 groups from the final draw. 4 teams each, 48 total.
@@ -100,4 +99,4 @@ def validate():
 
 if __name__ == "__main__":
     validate()
-    print("data OK: 48 teams, all rated.")
+    print("data OK: 48 teams, all rated (eloratings.net).")

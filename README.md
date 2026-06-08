@@ -143,10 +143,10 @@ To go beyond that you need proprietary data — diminishing returns from here.
 
 ## Tuning
 
-- `data.py` — Elo ratings, the 12 groups, host list. Teams marked `ESTIMATE`
-  were outside the public top-50 table; refine them if you have better numbers.
-- `engine.py` — three constants: `HOME_ADVANTAGE_ELO`, `AVG_GOALS`,
-  `ELO_PER_GOAL`. These are the model's knobs.
+- `data.py` — Elo ratings (all 48 from eloratings.net, no estimates), the 12
+  groups, host list.
+- `engine.py` — the model's knobs: `HOME_ADVANTAGE_ELO` plus the data-fitted
+  `BASE_GOALS`, `ELO_SUPREMACY`, `DRAW_RHO` (re-fit via `fit_variance.py`).
 
 ## Known simplifications
 
@@ -161,5 +161,5 @@ To go beyond that you need proprietary data — diminishing returns from here.
 ## Data sources (June 2026)
 
 - Groups: 2026 World Cup final draw (5 Dec 2025).
-- Elo: worldfootballrankings.com / eloratings.net.
+- Elo: eloratings.net (all 48 teams, the canonical World Football Elo).
 - Bracket structure: official FIFA match schedule.
