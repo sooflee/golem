@@ -1,0 +1,257 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>2026 World Cup &mdash; Model Forecast</title><style>
+:root{--bg:#0b1120;--card:#131c30;--ink:#e6edf6;--mut:#8aa0bd;--ac:#2dd4bf;--line:#22304d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.wrap{max-width:1000px;margin:0 auto;padding:24px}
+header{text-align:center;padding:40px 16px 18px}
+header .kick{color:var(--ac);letter-spacing:.18em;text-transform:uppercase;font-size:13px;font-weight:700}
+header h1{font-size:clamp(28px,5vw,46px);margin:.2em 0}
+header p{color:var(--mut);max-width:680px;margin:0 auto}
+.pick{margin:22px auto;display:inline-block;background:var(--card);border:1px solid var(--line);
+border-radius:14px;padding:14px 26px}
+.pick b{font-size:26px}.pick span{color:var(--ac)}
+.tuner{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 24px;margin:20px 0}
+.tuner .row{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px}
+.tuner .wlab{font-size:16px}.tuner .wlab b{color:var(--ac)}
+.tuner .wtag{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;
+color:#06231f;background:var(--ac);padding:3px 10px;border-radius:20px}
+.tuner .wtag:empty{display:none}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:5px;
+background:linear-gradient(90deg,#3b82f6,#2dd4bf);margin:16px 0 6px;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;
+background:#fff;border:3px solid var(--ac);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#fff;border:3px solid var(--ac)}
+.ends{display:flex;justify-content:space-between;color:var(--mut);font-size:12px}
+.divider{text-align:center;margin:46px 0 6px}
+.divider span{color:var(--ac);letter-spacing:.16em;text-transform:uppercase;font-size:13px;font-weight:700}
+.divider h2{font-size:30px;border:0;margin:.2em 0}
+section{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 24px;margin:20px 0}
+h2{font-size:22px;margin:.1em 0 .6em;border-bottom:1px solid var(--line);padding-bottom:.4em}
+h2 .n{color:var(--ac);margin-right:8px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:7px 8px;text-align:right;border-bottom:1px solid var(--line)}
+th{color:var(--mut);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+.l{text-align:left}.rank{color:var(--mut)}.mkt{color:var(--mut)}
+.prob{position:relative;min-width:120px}
+.prob span:last-child{position:relative;font-variant-numeric:tabular-nums}
+.bar{position:absolute;inset:0;display:flex;align-items:center;padding:0 8px;opacity:.22}
+.bar span{height:60%;border-radius:3px;display:block;transition:width .3s}
+.groups{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.gcard{background:#0e1626;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.gcard h4{margin:0 0 8px;font-size:13px;color:var(--mut)}
+.grow{display:flex;justify-content:space-between;font-size:13px;padding:3px 0}
+.grow em{font-style:normal;color:var(--mut)}
+.grow.adv span{font-weight:600}.grow.adv em{color:var(--ac)}
+.grow.out{opacity:.45}
+.bracket{display:flex;gap:14px;overflow-x:auto;padding-bottom:6px}
+.bcol{flex:1;min-width:160px}
+.bcol h4{color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin:0 0 10px}
+.tie{background:#0e1626;border:1px solid var(--line);border-radius:8px;margin-bottom:10px;overflow:hidden}
+.m{padding:7px 10px;font-size:13px;border-bottom:1px solid var(--line)}
+.m:last-child{border-bottom:0}
+.m.win{background:rgba(45,212,191,.14);font-weight:600}
+.trophy{margin-top:10px;text-align:center;font-weight:700;color:var(--ac)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:14px 0}
+.stat{background:#0e1626;border:1px solid var(--line);border-radius:10px;padding:14px;text-align:center}
+.stat b{display:block;font-size:26px;color:var(--ac)}
+.stat small{color:var(--mut)}
+p,li{color:#cdd9ea}.mut{color:var(--mut);font-size:13px}
+a{color:var(--ac)}
+code{background:#0e1626;padding:2px 6px;border-radius:5px;font-size:13px}
+.note{background:#0e1626;border-left:3px solid var(--ac);border-radius:0 8px 8px 0;
+padding:12px 16px;margin:14px 0;font-size:14.5px}
+.note b{color:var(--ac)}
+.formula{background:#0a0f1c;border:1px solid var(--line);border-radius:8px;padding:12px 16px;margin:10px 0;
+font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13.5px;white-space:pre-wrap;color:#bfe9e2}
+p.step{color:var(--ac);font-weight:700;margin:1.3em 0 .3em;font-size:14px}
+footer{text-align:center;color:var(--mut);font-size:13px;padding:30px 16px}
+@media(max-width:640px){.stats{grid-template-columns:1fr 1fr}}
+</style></head><body><div class=wrap>
+<header>
+<div class=kick>Monte Carlo &bull; Market-calibrated &bull; Backtested</div>
+<h1>2026 FIFA World Cup &mdash; Model Forecast</h1>
+<p>An Elo-driven Monte Carlo model anchored to the betting market, with per-match
+randomness fit to 50 years of results. 60,000 simulated tournaments per setting.
+<a href="#how">Jump to how it works &darr;</a></p>
+<div class=pick>Most likely champion<br><b>&#127942; <span id=champName>France</span></b></div>
+</header>
+
+<div class=tuner>
+<div class=row><div class=wlab id=wlab></div><div class=wtag id=wtag></div></div>
+<input type=range id=wslider min=0 max="5" step=1 value="1">
+<div class=ends><span>&larr; Our model (Elo)</span><span>Betting market &rarr;</span></div>
+<p class=mut style="margin:.6em 0 0">Drag to reweight the forecast between our
+independent Elo model and the betting market. Every stop is a real model run.
+Watch teams the market and the model disagree on (e.g. Argentina) move the most.</p>
+</div>
+
+<section><h2>Title &amp; deep-run odds</h2><div id=oddsWrap><table class=odds><tr><th>#</th><th class=l>Team</th><th>Champion</th><th>Final</th><th>Semi</th><th>Quarter</th><th>R16</th><th>Market</th></tr><tr><td class=rank>1</td><td class=l><b>Spain</b></td><td class=prob><div class="bar"><span style="width:16.6%;background:#2dd4bf"></span></div><span>16.6%</span></td><td>25.9%</td><td>39.4%</td><td>52.4%</td><td>71.4%</td><td class=mkt>15.5%</td></tr><tr><td class=rank>2</td><td class=l><b>France</b></td><td class=prob><div class="bar"><span style="width:16.4%;background:#2dd4bf"></span></div><span>16.4%</span></td><td>25.5%</td><td>38.9%</td><td>53.9%</td><td>74.5%</td><td class=mkt>14.8%</td></tr><tr><td class=rank>3</td><td class=l><b>England</b></td><td class=prob><div class="bar"><span style="width:10.9%;background:#2dd4bf"></span></div><span>10.9%</span></td><td>19.1%</td><td>31.0%</td><td>47.9%</td><td>68.8%</td><td class=mkt>10.6%</td></tr><tr><td class=rank>4</td><td class=l><b>Argentina</b></td><td class=prob><div class="bar"><span style="width:10.6%;background:#2dd4bf"></span></div><span>10.6%</span></td><td>18.9%</td><td>32.1%</td><td>47.4%</td><td>63.8%</td><td class=mkt>8.5%</td></tr><tr><td class=rank>5</td><td class=l><b>Portugal</b></td><td class=prob><div class="bar"><span style="width:8.3%;background:#2dd4bf"></span></div><span>8.3%</span></td><td>15.9%</td><td>27.7%</td><td>44.6%</td><td>65.6%</td><td class=mkt>9.0%</td></tr><tr><td class=rank>6</td><td class=l><b>Brazil</b></td><td class=prob><div class="bar"><span style="width:7.7%;background:#2dd4bf"></span></div><span>7.7%</span></td><td>14.2%</td><td>24.7%</td><td>41.3%</td><td>61.9%</td><td class=mkt>8.1%</td></tr><tr><td class=rank>7</td><td class=l><b>Germany</b></td><td class=prob><div class="bar"><span style="width:4.9%;background:#2dd4bf"></span></div><span>4.9%</span></td><td>10.2%</td><td>19.4%</td><td>32.6%</td><td>61.0%</td><td class=mkt>5.7%</td></tr><tr><td class=rank>8</td><td class=l><b>Netherlands</b></td><td class=prob><div class="bar"><span style="width:3.7%;background:#2dd4bf"></span></div><span>3.7%</span></td><td>7.9%</td><td>15.7%</td><td>30.9%</td><td>48.4%</td><td class=mkt>4.1%</td></tr><tr><td class=rank>9</td><td class=l><b>Belgium</b></td><td class=prob><div class="bar"><span style="width:2.1%;background:#2dd4bf"></span></div><span>2.1%</span></td><td>5.4%</td><td>12.5%</td><td>29.1%</td><td>54.7%</td><td class=mkt>2.1%</td></tr><tr><td class=rank>10</td><td class=l><b>Norway</b></td><td class=prob><div class="bar"><span style="width:1.8%;background:#2dd4bf"></span></div><span>1.8%</span></td><td>4.8%</td><td>11.0%</td><td>22.6%</td><td>44.5%</td><td class=mkt>2.4%</td></tr><tr><td class=rank>11</td><td class=l><b>Colombia</b></td><td class=prob><div class="bar"><span style="width:1.8%;background:#2dd4bf"></span></div><span>1.8%</span></td><td>4.8%</td><td>11.1%</td><td>22.8%</td><td>45.1%</td><td class=mkt>2.1%</td></tr><tr><td class=rank>12</td><td class=l><b>Morocco</b></td><td class=prob><div class="bar"><span style="width:1.8%;background:#2dd4bf"></span></div><span>1.8%</span></td><td>4.5%</td><td>10.5%</td><td>23.2%</td><td>42.4%</td><td class=mkt>1.7%</td></tr><tr><td class=rank>13</td><td class=l><b>United States</b></td><td class=prob><div class="bar"><span style="width:1.5%;background:#2dd4bf"></span></div><span>1.5%</span></td><td>4.1%</td><td>10.1%</td><td>23.6%</td><td>47.1%</td><td class=mkt>1.4%</td></tr><tr><td class=rank>14</td><td class=l><b>Mexico</b></td><td class=prob><div class="bar"><span style="width:1.2%;background:#2dd4bf"></span></div><span>1.2%</span></td><td>3.5%</td><td>8.9%</td><td>21.7%</td><td>48.5%</td><td class=mkt>1.1%</td></tr><tr><td class=rank>15</td><td class=l><b>Switzerland</b></td><td class=prob><div class="bar"><span style="width:1.1%;background:#2dd4bf"></span></div><span>1.1%</span></td><td>3.1%</td><td>8.3%</td><td>21.1%</td><td>48.0%</td><td class=mkt>1.3%</td></tr><tr><td class=rank>16</td><td class=l><b>Uruguay</b></td><td class=prob><div class="bar"><span style="width:1.1%;background:#2dd4bf"></span></div><span>1.1%</span></td><td>3.1%</td><td>8.2%</td><td>17.8%</td><td>34.2%</td><td class=mkt>1.3%</td></tr></table></div>
+<p class=mut>"Market" is the de-vigged bookmaker title odds. Other columns are the
+simulated probability of reaching each round at the current slider setting.</p></section>
+
+<section><h2>Group stage &mdash; predicted top two</h2><div id=groupsWrap><div class=groups><div class=gcard><h4>Group A</h4><div class='grow adv'><span>Mexico</span><em>49%</em></div><div class='grow adv'><span>Czechia</span><em>32%</em></div><div class='grow out'><span>South Korea</span><em>27%</em></div><div class='grow out'><span>South Africa</span><em>18%</em></div></div><div class=gcard><h4>Group B</h4><div class='grow adv'><span>Switzerland</span><em>48%</em></div><div class='grow adv'><span>Canada</span><em>35%</em></div><div class='grow out'><span>Bosnia and Herzegovina</span><em>26%</em></div><div class='grow out'><span>Qatar</span><em>18%</em></div></div><div class=gcard><h4>Group C</h4><div class='grow adv'><span>Brazil</span><em>62%</em></div><div class='grow adv'><span>Morocco</span><em>42%</em></div><div class='grow out'><span>Scotland</span><em>25%</em></div><div class='grow out'><span>Haiti</span><em>9%</em></div></div><div class=gcard><h4>Group D</h4><div class='grow adv'><span>United States</span><em>47%</em></div><div class='grow adv'><span>Turkiye</span><em>39%</em></div><div class='grow out'><span>Paraguay</span><em>26%</em></div><div class='grow out'><span>Australia</span><em>20%</em></div></div><div class=gcard><h4>Group E</h4><div class='grow adv'><span>Germany</span><em>61%</em></div><div class='grow adv'><span>Ecuador</span><em>38%</em></div><div class='grow out'><span>Ivory Coast</span><em>27%</em></div><div class='grow out'><span>Curacao</span><em>10%</em></div></div><div class=gcard><h4>Group F</h4><div class='grow adv'><span>Netherlands</span><em>48%</em></div><div class='grow adv'><span>Japan</span><em>33%</em></div><div class='grow out'><span>Sweden</span><em>28%</em></div><div class='grow out'><span>Tunisia</span><em>17%</em></div></div><div class=gcard><h4>Group G</h4><div class='grow adv'><span>Belgium</span><em>55%</em></div><div class='grow adv'><span>Egypt</span><em>30%</em></div><div class='grow out'><span>Iran</span><em>24%</em></div><div class='grow out'><span>New Zealand</span><em>16%</em></div></div><div class=gcard><h4>Group H</h4><div class='grow adv'><span>Spain</span><em>71%</em></div><div class='grow adv'><span>Uruguay</span><em>34%</em></div><div class='grow out'><span>Cape Verde</span><em>13%</em></div><div class='grow out'><span>Saudi Arabia</span><em>13%</em></div></div><div class=gcard><h4>Group I</h4><div class='grow adv'><span>France</span><em>75%</em></div><div class='grow adv'><span>Norway</span><em>44%</em></div><div class='grow out'><span>Senegal</span><em>35%</em></div><div class='grow out'><span>Iraq</span><em>11%</em></div></div><div class=gcard><h4>Group J</h4><div class='grow adv'><span>Argentina</span><em>64%</em></div><div class='grow adv'><span>Austria</span><em>26%</em></div><div class='grow out'><span>Algeria</span><em>20%</em></div><div class='grow out'><span>Jordan</span><em>10%</em></div></div><div class=gcard><h4>Group K</h4><div class='grow adv'><span>Portugal</span><em>66%</em></div><div class='grow adv'><span>Colombia</span><em>45%</em></div><div class='grow out'><span>DR Congo</span><em>14%</em></div><div class='grow out'><span>Uzbekistan</span><em>12%</em></div></div><div class=gcard><h4>Group L</h4><div class='grow adv'><span>England</span><em>69%</em></div><div class='grow adv'><span>Croatia</span><em>36%</em></div><div class='grow out'><span>Ghana</span><em>22%</em></div><div class='grow out'><span>Panama</span><em>13%</em></div></div></div></div>
+<p class=mut>Highlighted = advance. The 8 best third-placed teams also qualify.</p></section>
+
+<section><h2>Knockout bracket (favorites)</h2>
+<p class=mut>One concrete bracket where the higher-rated side wins every game.</p>
+<div id=bracketWrap><div class=bracket><div class=bcol><h4>Round of 16</h4><div class=tie><div class='m '>Germany</div><div class='m win'>France</div></div><div class=tie><div class='m '>Canada</div><div class='m win'>Netherlands</div></div><div class=tie><div class='m win'>Brazil</div><div class='m '>Norway</div></div><div class=tie><div class='m '>Mexico</div><div class='m win'>England</div></div><div class=tie><div class='m '>Colombia</div><div class='m win'>Spain</div></div><div class=tie><div class='m '>United States</div><div class='m win'>Belgium</div></div><div class=tie><div class='m win'>Argentina</div><div class='m '>Turkiye</div></div><div class=tie><div class='m '>Switzerland</div><div class='m win'>Portugal</div></div></div><div class=bcol><h4>Quarter-finals</h4><div class=tie><div class='m win'>France</div><div class='m '>Netherlands</div></div><div class=tie><div class='m win'>Spain</div><div class='m '>Belgium</div></div><div class=tie><div class='m '>Brazil</div><div class='m win'>England</div></div><div class=tie><div class='m win'>Argentina</div><div class='m '>Portugal</div></div></div><div class=bcol><h4>Semi-finals</h4><div class=tie><div class='m win'>France</div><div class='m '>Spain</div></div><div class=tie><div class='m win'>England</div><div class='m '>Argentina</div></div></div><div class=bcol><h4>Final</h4><div class=tie><div class='m win'>France</div><div class='m '>England</div></div><div class=trophy>&#127942; France</div></div></div></div></section>
+
+<div class=divider id=how><span>The method</span><h2>How it works</h2></div>
+
+<section><h2><span class=n>0</span>The big idea: play the tournament 100,000 times</h2>
+<p>You can't know what <em>will</em> happen at one World Cup &mdash; it's played
+once, and luck matters. So we ask an answerable question:
+<b>if this exact tournament were replayed thousands of times, how often would each
+team win?</b></p>
+<p>That's a <b>Monte Carlo simulation</b>. Simulate one match realistically &mdash;
+with the right randomness &mdash; and you can play all 104 matches, repeat 60,000
+times, and just <em>count</em>. Win 16,400 of 100,000 &rarr; a 16.4% title chance.</p>
+<div class=note><b>The whole challenge</b> is three things: (1) how good is each
+team, (2) how "how good" becomes a result <em>including luck</em>, and (3) the
+tournament structure. The rest is counting.</div></section>
+
+<section><h2><span class=n>1</span>How good is each team? (Elo ratings)</h2>
+<p>Every team gets an <b>Elo rating</b> &mdash; the system invented for chess. You
+gain points for winning (more for beating a strong team), and the <em>gap</em>
+between two ratings predicts the result, built so a <b>400-point gap &asymp; a
+10-to-1 favorite</b>:</p>
+<div class=formula>win_expectancy = 1 / (1 + 10^(&minus;(rating_A &minus; rating_B)/400))</div>
+<p>Equal teams &rarr; 0.5; a 200-point edge &rarr; ~76%. Hosts get a small home bump.</p>
+<div class=note><b>Why win-expectancy, not raw points?</b> Different sites publish
+Elo on different scales. This formula always maps a <em>gap</em> to the same
+probability, so the model works with any ratings.</div></section>
+
+<section><h2><span class=n>2</span>Simulating one match</h2>
+<p>We simulate the <b>score</b>, not just win/lose &mdash; the group stage ranks by
+goal difference. We turn each side's win-expectancy into expected goals, then draw
+a random scoreline from a <b>Poisson distribution</b> (the standard model for
+counting rare scattered events &mdash; goals, raindrops, typos per page):</p>
+<div class=formula>goals_A ~ Poisson( 1.178 &times; e^( 1.98&times;(win_exp&minus;0.5)) )
+goals_B ~ Poisson( 1.178 &times; e^(&minus;1.98&times;(win_exp&minus;0.5)) )</div>
+<p>Two even teams average 1.178 each; a favorite's average rises. The
+<b>Dixon-Coles correction</b> nudges low scores so the draw rate matches reality.</p></section>
+
+<section><h2><span class=n>3</span>A worked example: Spain vs Croatia</h2>
+<p><b>Spain</b> (rating 1853) vs <b>Croatia</b> (rating 1708),
+neutral venue. Exactly what the engine does:</p>
+<p class=step>Step A &mdash; rating gap</p>
+<div class=formula>1853 &minus; 1708 = 144 points in Spain's favor</div>
+<p class=step>Step B &mdash; turn the gap into a win expectancy</p>
+<div class=formula>win_exp = 1 / (1 + 10^(&minus;144/400)) = 0.697
+&rarr; on strength alone, Spain is about a 70% favorite</div>
+<p class=step>Step C &mdash; turn that into expected goals</p>
+<div class=formula>&lambda;(Spain)  = 1.178 &times; e^( 1.98&times;(0.697&minus;0.5)) = 1.74 goals
+&lambda;(Croatia) = 1.178 &times; e^(&minus;1.98&times;(0.697&minus;0.5)) = 0.80 goals</div>
+<p class=step>Step D &mdash; roll the dice (Poisson + draw correction)</p>
+<div class=stats>
+<div class=stat><b>58%</b><small>Spain win</small></div>
+<div class=stat><b>27%</b><small>draw</small></div>
+<div class=stat><b>15%</b><small>Croatia win</small></div>
+</div>
+<p class=mut>Most likely exact score: Spain 1&ndash;1 Croatia.
+Croatia still avoids defeat 42% of the time &mdash; that's the
+randomness from Step&nbsp;4. A tournament is just this, 104 times, repeated many
+times over.</p>
+</section>
+
+<section><h2><span class=n>4</span>The key step: measuring how random football is</h2>
+<p>The two numbers above (1.178 and 1.98) control <b>how much a rating edge
+really decides a match versus how much is luck</b>. Guess wrong and the model gets
+over-confident (a bank once put one team at 26% to win it all) or under-confident.
+So we <b>measure them from 24,787 real internationals since 2000</b>
+(recent football only), finding the settings that make the results that
+<em>actually happened</em> most likely (<b>maximum likelihood</b>). The verdict on
+football's built-in randomness:</p>
+<table class=rand><tr><th class=l>Matchup (by rating)</th><th>Win</th><th>Draw</th><th>Lose</th></tr><tr><td class=l>Even (50/50)</td><td>34%</td><td>32%</td><td>34%</td></tr><tr><td class=l>Slight edge (60%)</td><td>46%</td><td>30%</td><td>24%</td></tr><tr><td class=l>Clear favorite (70%)</td><td>59%</td><td>26%</td><td>15%</td></tr><tr><td class=l>Big favorite (80%)</td><td>70%</td><td>21%</td><td>9%</td></tr><tr><td class=l>Huge favorite (90%)</td><td>81%</td><td>15%</td><td>5%</td></tr></table>
+<div class=note><b>This is why no team dominates.</b> Even a clear favorite loses
+or draws ~40% of single games. Claiming someone is 26% to win seven knockout
+rounds quietly assumes football is far less random than 24,787 games say.</div></section>
+
+<section><h2><span class=n>5</span>Trusting the betting market (calibration &amp; the slider)</h2>
+<p>The <b>betting market</b> is the best-calibrated forecast there is &mdash;
+millions of people with real money, reacting to injuries and news. Bookmaker odds
+sum to over 100%; that overage (~18% here) is their margin, the "vig," which
+we strip out. Then we <b>calibrate</b>: nudge each team's rating until <em>our</em>
+simulated title odds match the market's.</p>
+<p>The slider at the top blends the two: <b>0% = our pure Elo model</b> (free to
+disagree with the market, Goldman-style), <b>100% = the pure market</b>. The
+recommended default is <b>85% market / 15% model</b> &mdash; lean on the market
+(historically the best single forecast) while keeping the model as a hedge.</p></section>
+
+<section><h2><span class=n>6</span>Does it actually work? (Backtesting)</h2>
+<p>A forecast you never check is just an opinion. We tested the engine on
+<b>957 real World Cup matches (1990&ndash;2022)</b>, predicting each from the
+teams' ratings beforehand:</p>
+<div class=stats>
+<div class=stat><b>8.0%</b><small>better than a naive baseline (log-loss)</small></div>
+<div class=stat><b>73%</b><small>favorite correctly picked (decisive games)</small></div>
+<div class=stat><b>0.973</b><small>log-loss vs baseline 1.058</small></div>
+</div>
+<p>We score with <b>log-loss</b>, which rewards being confident <em>and</em> right
+and punishes confident-but-wrong, so you can't game it by hedging. The randomness
+we measured on ordinary games was also near-optimal for World Cup games &mdash; so
+we didn't tune the model to its own data.</p></section>
+
+<section><h2>What it can't do (being honest)</h2>
+<ul>
+<li>Ratings are fixed at kickoff &mdash; no reaction to a mid-tournament injury.</li>
+<li>A few lower-ranked teams use estimated ratings (calibration mostly washes this out).</li>
+<li>Group tiebreakers are simplified versus FIFA's full head-to-head rules.</li>
+<li>We validated the engine and randomness, but not the exact blend weight &mdash;
+that needs historical betting odds we don't have. (Hence the slider: judge for yourself.)</li>
+</ul>
+<p class=mut>Reproduce: <code>python3 run.py</code>,
+<code>python3 fit_variance.py</code>, <code>python3 backtest.py</code>.</p></section>
+
+<footer>Generated June 8, 2026. Sources: bookmaker futures, World Football Elo, FIFA
+fixtures, the martj42 international-results dataset.<br>
+A model, not a guarantee &mdash; the point is that upsets happen.</footer>
+</div><script>const SNAP=[{"champ": "Spain", "won": {"73": "Canada", "75": "Netherlands", "76": "Brazil", "78": "Norway", "83": "Colombia", "84": "Spain", "86": "Argentina", "88": "Turkiye", "74": "Germany", "77": "France", "79": "Mexico", "80": "England", "81": "United States", "82": "Belgium", "85": "Switzerland", "87": "Portugal", "89": "France", "90": "Netherlands", "91": "Brazil", "92": "England", "93": "Spain", "94": "Belgium", "95": "Argentina", "96": "Portugal", "97": "France", "98": "Spain", "99": "England", "100": "Portugal", "101": "Spain", "102": "England"}, "teams": {"Spain": [0.7173, 0.5216, 0.3915, 0.2552, 0.1616], "France": [0.7334, 0.5189, 0.3665, 0.24, 0.1525], "England": [0.6829, 0.4747, 0.3052, 0.1911, 0.1107], "Portugal": [0.6586, 0.4477, 0.2868, 0.167, 0.0927], "Argentina": [0.6079, 0.4331, 0.279, 0.1597, 0.0862], "Brazil": [0.6178, 0.4106, 0.2496, 0.1456, 0.0803], "Germany": [0.6143, 0.3356, 0.2023, 0.11, 0.0557], "Netherlands": [0.4894, 0.3126, 0.161, 0.083, 0.0396], "Norway": [0.4638, 0.2418, 0.1224, 0.0564, 0.0226], "Belgium": [0.5358, 0.2846, 0.1233, 0.0523, 0.0208], "Colombia": [0.4485, 0.2299, 0.1187, 0.0525, 0.0204], "Morocco": [0.3996, 0.2168, 0.0963, 0.0418, 0.0169], "United States": [0.4541, 0.2249, 0.0954, 0.037, 0.0131], "Switzerland": [0.4909, 0.2198, 0.0917, 0.0347, 0.0122], "Uruguay": [0.3589, 0.1876, 0.0857, 0.0333, 0.0117], "Japan": [0.3421, 0.1767, 0.0759, 0.0319, 0.0115], "Mexico": [0.4472, 0.1919, 0.074, 0.0285, 0.0097], "Ecuador": [0.38, 0.1593, 0.068, 0.0273, 0.0093], "Croatia": [0.338, 0.1506, 0.0671, 0.0257, 0.0087], "Turkiye": [0.4013, 0.1834, 0.0697, 0.0258, 0.0087], "Senegal": [0.33, 0.1459, 0.061, 0.024, 0.0079], "Sweden": [0.2797, 0.1309, 0.0503, 0.0181, 0.0057], "Austria": [0.2723, 0.1255, 0.0512, 0.0174, 0.0051], "Scotland": [0.2571, 0.111, 0.04, 0.0138, 0.0039], "Canada": [0.3524, 0.1283, 0.0415, 0.0124, 0.0038], "Ghana": [0.2175, 0.0838, 0.0309, 0.0092, 0.0028], "Ivory Coast": [0.2678, 0.0962, 0.0329, 0.0107, 0.0027], "Czechia": [0.3201, 0.1112, 0.0334, 0.0106, 0.0026], "Egypt": [0.3039, 0.1093, 0.0333, 0.0097, 0.0026], "Paraguay": [0.2603, 0.0964, 0.031, 0.0088, 0.0024], "South Korea": [0.2865, 0.0964, 0.0281, 0.0077, 0.0019], "Algeria": [0.2049, 0.0822, 0.0283, 0.008, 0.0018], "Bosnia and Herzegovina": [0.2633, 0.0857, 0.0235, 0.0058, 0.0014], "Tunisia": [0.1639, 0.0604, 0.0181, 0.0053, 0.0014], "Australia": [0.1976, 0.0634, 0.0183, 0.0046, 0.0011], "Iran": [0.226, 0.0688, 0.0198, 0.0049, 0.001], "Saudi Arabia": [0.1361, 0.0484, 0.0144, 0.0036, 0.0009], "DR Congo": [0.155, 0.0515, 0.0163, 0.0039, 0.0009], "Panama": [0.1298, 0.0406, 0.0121, 0.0033, 0.0008], "South Africa": [0.1953, 0.0547, 0.0127, 0.0031, 0.0008], "Cape Verde": [0.1321, 0.0436, 0.0122, 0.0029, 0.0006], "Uzbekistan": [0.1154, 0.034, 0.0091, 0.0022, 0.0005], "Qatar": [0.1774, 0.0495, 0.0112, 0.0026, 0.0005], "New Zealand": [0.1697, 0.0459, 0.0112, 0.0022, 0.0005], "Iraq": [0.1113, 0.0325, 0.0087, 0.0021, 0.0004], "Jordan": [0.1, 0.0301, 0.0079, 0.0016, 0.0003], "Haiti": [0.0932, 0.0282, 0.0068, 0.0014, 0.0003], "Curacao": [0.0995, 0.0235, 0.0057, 0.0013, 0.0002]}}, {"champ": "France", "won": {"73": "Canada", "75": "Netherlands", "76": "Brazil", "78": "Norway", "83": "Colombia", "84": "Spain", "86": "Argentina", "88": "Turkiye", "74": "Germany", "77": "France", "79": "Mexico", "80": "England", "81": "United States", "82": "Belgium", "85": "Switzerland", "87": "Portugal", "89": "France", "90": "Netherlands", "91": "Brazil", "92": "England", "93": "Spain", "94": "Belgium", "95": "Argentina", "96": "Portugal", "97": "France", "98": "Spain", "99": "England", "100": "Argentina", "101": "France", "102": "England"}, "teams": {"Spain": [0.7142, 0.5244, 0.3938, 0.2588, 0.1657], "France": [0.7451, 0.5387, 0.3891, 0.2548, 0.1644], "England": [0.6878, 0.4792, 0.31, 0.1913, 0.1093], "Argentina": [0.6382, 0.4743, 0.3207, 0.1891, 0.1064], "Portugal": [0.6561, 0.4461, 0.2774, 0.1594, 0.0832], "Brazil": [0.6188, 0.4132, 0.2466, 0.1417, 0.0765], "Germany": [0.61, 0.3265, 0.1935, 0.1016, 0.0492], "Netherlands": [0.4842, 0.3094, 0.1568, 0.0794, 0.0365], "Belgium": [0.5473, 0.2912, 0.1251, 0.0536, 0.0213], "Norway": [0.4449, 0.2261, 0.1099, 0.0476, 0.0183], "Colombia": [0.4508, 0.2281, 0.1108, 0.0476, 0.0183], "Morocco": [0.424, 0.2323, 0.1054, 0.0454, 0.0176], "United States": [0.4712, 0.2356, 0.101, 0.0409, 0.0149], "Mexico": [0.4854, 0.217, 0.0888, 0.0352, 0.0121], "Switzerland": [0.48, 0.2113, 0.0827, 0.0312, 0.0107], "Uruguay": [0.3419, 0.1777, 0.0822, 0.0311, 0.0107], "Japan": [0.3331, 0.1724, 0.073, 0.0287, 0.01], "Croatia": [0.3564, 0.1625, 0.0731, 0.0277, 0.009], "Ecuador": [0.3758, 0.1529, 0.0623, 0.0238, 0.0083], "Senegal": [0.3504, 0.1571, 0.0661, 0.0258, 0.0083], "Turkiye": [0.3901, 0.1712, 0.0664, 0.0235, 0.0076], "Sweden": [0.2765, 0.1289, 0.0489, 0.0185, 0.0061], "Austria": [0.2561, 0.1135, 0.0445, 0.0134, 0.0039], "Canada": [0.3541, 0.1281, 0.0404, 0.0128, 0.0035], "Scotland": [0.2457, 0.1036, 0.0336, 0.0108, 0.0029], "Ivory Coast": [0.265, 0.0933, 0.0312, 0.0092, 0.0027], "Egypt": [0.2998, 0.1043, 0.0325, 0.0092, 0.0027], "Ghana": [0.2179, 0.0813, 0.0299, 0.0092, 0.0024], "Czechia": [0.3187, 0.1098, 0.0319, 0.0088, 0.0023], "Algeria": [0.201, 0.0799, 0.0279, 0.0086, 0.0018], "Paraguay": [0.2562, 0.0897, 0.0274, 0.0079, 0.0018], "South Korea": [0.2703, 0.0863, 0.0232, 0.0063, 0.0014], "Bosnia and Herzegovina": [0.2584, 0.0825, 0.0221, 0.0057, 0.0013], "Tunisia": [0.1669, 0.0627, 0.0195, 0.0054, 0.0013], "Iran": [0.2401, 0.0709, 0.0202, 0.0048, 0.0012], "Australia": [0.2039, 0.0658, 0.0191, 0.0051, 0.0009], "Saudi Arabia": [0.1309, 0.045, 0.0126, 0.0033, 0.0006], "South Africa": [0.1834, 0.0501, 0.0113, 0.0025, 0.0006], "Cape Verde": [0.1339, 0.0454, 0.0117, 0.0025, 0.0006], "New Zealand": [0.1642, 0.0415, 0.0102, 0.0022, 0.0006], "Panama": [0.1268, 0.0394, 0.0111, 0.0029, 0.0005], "Qatar": [0.1777, 0.0478, 0.0103, 0.0025, 0.0005], "Iraq": [0.1057, 0.0295, 0.0075, 0.0016, 0.0004], "DR Congo": [0.1354, 0.0408, 0.0112, 0.0025, 0.0004], "Uzbekistan": [0.1157, 0.0328, 0.0089, 0.0021, 0.0003], "Curacao": [0.1017, 0.0254, 0.0057, 0.0014, 0.0003], "Jordan": [0.0994, 0.0287, 0.0065, 0.0013, 0.0003], "Haiti": [0.089, 0.0258, 0.0058, 0.0014, 0.0003]}}, {"champ": "France", "won": {"73": "Canada", "75": "Netherlands", "76": "Brazil", "78": "Norway", "83": "Colombia", "84": "Spain", "86": "Argentina", "88": "Turkiye", "74": "Germany", "77": "France", "79": "Mexico", "80": "England", "81": "United States", "82": "Belgium", "85": "Switzerland", "87": "Portugal", "89": "France", "90": "Netherlands", "91": "Brazil", "92": "England", "93": "Spain", "94": "Belgium", "95": "Argentina", "96": "Portugal", "97": "France", "98": "Spain", "99": "England", "100": "Argentina", "101": "France", "102": "Argentina"}, "teams": {"France": [0.7559, 0.5582, 0.4031, 0.2645, 0.1699], "Spain": [0.7198, 0.5338, 0.406, 0.268, 0.1697], "Argentina": [0.6656, 0.5071, 0.3527, 0.218, 0.126], "England": [0.7068, 0.4938, 0.3241, 0.1982, 0.1151], "Portugal": [0.6517, 0.4361, 0.2607, 0.1464, 0.0756], "Brazil": [0.616, 0.4068, 0.24, 0.1326, 0.0685], "Germany": [0.6083, 0.3201, 0.186, 0.0943, 0.0444], "Netherlands": [0.4903, 0.3121, 0.157, 0.077, 0.036], "Belgium": [0.5592, 0.3014, 0.1295, 0.0556, 0.0207], "Morocco": [0.449, 0.2551, 0.1184, 0.0507, 0.0201], "Colombia": [0.4454, 0.2215, 0.1066, 0.044, 0.0169], "Norway": [0.4377, 0.2198, 0.1036, 0.0439, 0.0158], "Mexico": [0.5221, 0.2395, 0.1001, 0.0417, 0.0154], "United States": [0.495, 0.2476, 0.1042, 0.0424, 0.0149], "Uruguay": [0.3352, 0.1734, 0.0788, 0.0297, 0.0098], "Croatia": [0.3689, 0.1658, 0.0749, 0.0293, 0.0093], "Switzerland": [0.4869, 0.2137, 0.0815, 0.0296, 0.0092], "Japan": [0.3343, 0.1694, 0.0679, 0.0254, 0.0086], "Senegal": [0.3499, 0.1572, 0.0662, 0.0246, 0.0076], "Ecuador": [0.3727, 0.1484, 0.0595, 0.0217, 0.0069], "Turkiye": [0.3869, 0.1645, 0.0602, 0.0204, 0.0062], "Sweden": [0.2692, 0.1213, 0.0432, 0.0149, 0.0042], "Austria": [0.2524, 0.1119, 0.0429, 0.0133, 0.0032], "Canada": [0.3519, 0.1268, 0.038, 0.0114, 0.0031], "Scotland": [0.2316, 0.0968, 0.0317, 0.0101, 0.0029], "Ivory Coast": [0.2573, 0.088, 0.0293, 0.0084, 0.002], "Czechia": [0.3017, 0.1005, 0.0292, 0.008, 0.0018], "Egypt": [0.2946, 0.0972, 0.0288, 0.0074, 0.0018], "Paraguay": [0.2437, 0.0795, 0.0238, 0.0063, 0.0017], "Ghana": [0.2061, 0.0739, 0.0254, 0.0066, 0.0016], "Algeria": [0.1965, 0.0766, 0.0252, 0.0071, 0.0015], "South Korea": [0.2766, 0.09, 0.0245, 0.007, 0.0014], "Iran": [0.2555, 0.0781, 0.022, 0.0054, 0.0011], "Bosnia and Herzegovina": [0.2536, 0.0786, 0.0198, 0.0048, 0.001], "Tunisia": [0.1489, 0.0524, 0.0148, 0.0043, 0.0009], "Australia": [0.1947, 0.0577, 0.0161, 0.0038, 0.0008], "Panama": [0.1281, 0.0393, 0.011, 0.0027, 0.0007], "DR Congo": [0.1374, 0.0411, 0.0113, 0.0027, 0.0006], "South Africa": [0.1867, 0.0518, 0.011, 0.0024, 0.0005], "Iraq": [0.1081, 0.0312, 0.0077, 0.0021, 0.0004], "Cape Verde": [0.1147, 0.0372, 0.0095, 0.0023, 0.0004], "Qatar": [0.166, 0.0429, 0.0095, 0.0019, 0.0003], "Saudi Arabia": [0.1251, 0.0408, 0.0114, 0.0025, 0.0003], "Uzbekistan": [0.1113, 0.0311, 0.0083, 0.0015, 0.0003], "New Zealand": [0.1527, 0.0371, 0.0079, 0.0016, 0.0003], "Curacao": [0.1084, 0.0264, 0.0059, 0.0012, 0.0002], "Haiti": [0.0879, 0.0244, 0.0054, 0.0011, 0.0002], "Jordan": [0.0815, 0.0219, 0.0052, 0.001, 0.0001]}}, {"champ": "France", "won": {"73": "Canada", "75": "Netherlands", "76": "Brazil", "78": "Norway", "83": "Colombia", "84": "Spain", "86": "Argentina", "88": "Turkiye", "74": "Germany", "77": "France", "79": "Mexico", "80": "England", "81": "United States", "82": "Belgium", "85": "Switzerland", "87": "Portugal", "89": "France", "90": "Netherlands", "91": "Brazil", "92": "England", "93": "Spain", "94": "Belgium", "95": "Argentina", "96": "Portugal", "97": "France", "98": "Spain", "99": "England", "100": "Argentina", "101": "France", "102": "Argentina"}, "teams": {"France": [0.7788, 0.5884, 0.4293, 0.2801, 0.1797], "Spain": [0.7314, 0.5511, 0.427, 0.2816, 0.1786], "Argentina": [0.6999, 0.5528, 0.4025, 0.2616, 0.1562], "England": [0.7177, 0.4968, 0.3226, 0.1927, 0.1081], "Portugal": [0.653, 0.431, 0.2446, 0.1318, 0.0639], "Brazil": [0.6168, 0.4097, 0.2359, 0.1249, 0.0608], "Germany": [0.6138, 0.3075, 0.1737, 0.0828, 0.0365], "Netherlands": [0.4942, 0.319, 0.1574, 0.0759, 0.0327], "Morocco": [0.4818, 0.2798, 0.1321, 0.0579, 0.0228], "Belgium": [0.5825, 0.3145, 0.1343, 0.059, 0.0228], "Mexico": [0.5684, 0.2756, 0.1244, 0.0524, 0.0199], "United States": [0.527, 0.2673, 0.112, 0.0453, 0.0157], "Colombia": [0.4503, 0.2177, 0.0996, 0.0394, 0.0139], "Norway": [0.4152, 0.1997, 0.0885, 0.0348, 0.0114], "Croatia": [0.3947, 0.1776, 0.0803, 0.0292, 0.0102], "Switzerland": [0.4877, 0.208, 0.074, 0.026, 0.0081], "Senegal": [0.3763, 0.1726, 0.0709, 0.0257, 0.008], "Uruguay": [0.3132, 0.158, 0.0697, 0.0259, 0.0078], "Japan": [0.3261, 0.1635, 0.063, 0.0227, 0.0076], "Turkiye": [0.3692, 0.1476, 0.0512, 0.0166, 0.0046], "Ecuador": [0.3663, 0.1375, 0.0525, 0.0174, 0.0046], "Austria": [0.243, 0.1053, 0.0395, 0.0126, 0.0032], "Sweden": [0.2482, 0.1085, 0.0367, 0.0113, 0.0031], "Canada": [0.3612, 0.1274, 0.0365, 0.0109, 0.0025], "Scotland": [0.2164, 0.0858, 0.0265, 0.0076, 0.0021], "Iran": [0.2873, 0.0915, 0.0259, 0.0065, 0.0016], "Ivory Coast": [0.2498, 0.0794, 0.0247, 0.0065, 0.0015], "South Korea": [0.2713, 0.0842, 0.022, 0.0059, 0.0013], "Egypt": [0.2768, 0.0877, 0.0259, 0.0066, 0.0013], "Czechia": [0.2907, 0.0934, 0.0244, 0.0053, 0.0013], "Ghana": [0.1901, 0.0658, 0.021, 0.0055, 0.0013], "Paraguay": [0.2347, 0.0724, 0.0207, 0.0051, 0.0011], "Algeria": [0.1774, 0.0659, 0.0192, 0.0048, 0.0011], "Bosnia and Herzegovina": [0.2421, 0.0714, 0.0159, 0.0034, 0.0008], "Australia": [0.1905, 0.053, 0.0141, 0.0036, 0.0007], "Tunisia": [0.1437, 0.0498, 0.0127, 0.0029, 0.0007], "Panama": [0.1335, 0.0414, 0.012, 0.0031, 0.0005], "DR Congo": [0.1274, 0.0353, 0.0089, 0.0021, 0.0004], "Cape Verde": [0.1139, 0.0364, 0.0098, 0.0022, 0.0004], "Saudi Arabia": [0.1095, 0.0343, 0.0087, 0.0017, 0.0002], "South Africa": [0.1787, 0.0478, 0.0106, 0.0018, 0.0002], "New Zealand": [0.1508, 0.0361, 0.0075, 0.0015, 0.0002], "Iraq": [0.0921, 0.0237, 0.0049, 0.001, 0.0002], "Haiti": [0.078, 0.0208, 0.0046, 0.0009, 0.0002], "Uzbekistan": [0.0986, 0.0256, 0.0063, 0.0012, 0.0001], "Qatar": [0.1577, 0.0378, 0.0066, 0.0011, 0.0001], "Curacao": [0.0892, 0.021, 0.0044, 0.0007, 0.0001], "Jordan": [0.0832, 0.0227, 0.0044, 0.0007, 0.0]}}, {"champ": "France", "won": {"73": "Canada", "75": "Netherlands", "76": "Brazil", "78": "Senegal", "83": "Croatia", "84": "Spain", "86": "Argentina", "88": "Turkiye", "74": "Germany", "77": "France", "79": "Mexico", "80": "England", "81": "United States", "82": "Belgium", "85": "Switzerland", "87": "Portugal", "89": "France", "90": "Netherlands", "91": "Brazil", "92": "England", "93": "Spain", "94": "Belgium", "95": "Argentina", "96": "Portugal", "97": "France", "98": "Spain", "99": "England", "100": "Argentina", "101": "France", "102": "Argentina"}, "teams": {"France": [0.8095, 0.6286, 0.4678, 0.3013, 0.1922], "Spain": [0.7528, 0.5733, 0.4487, 0.2981, 0.1862], "Argentina": [0.734, 0.5971, 0.4518, 0.3012, 0.1837], "England": [0.749, 0.5182, 0.3429, 0.201, 0.1103], "Portugal": [0.6478, 0.4277, 0.2249, 0.1147, 0.0515], "Brazil": [0.6181, 0.4101, 0.2228, 0.1096, 0.0503], "Netherlands": [0.5051, 0.3332, 0.1592, 0.0725, 0.029], "Germany": [0.6191, 0.2916, 0.1575, 0.0697, 0.0278], "Morocco": [0.5413, 0.3336, 0.1604, 0.0701, 0.0277], "Mexico": [0.6338, 0.3132, 0.1498, 0.0644, 0.0248], "Belgium": [0.6261, 0.3387, 0.1428, 0.0608, 0.0231], "United States": [0.5851, 0.3062, 0.128, 0.0532, 0.0183], "Colombia": [0.4401, 0.2103, 0.0905, 0.0346, 0.0108], "Croatia": [0.4383, 0.1979, 0.0909, 0.0343, 0.0108], "Senegal": [0.4045, 0.1867, 0.0729, 0.0245, 0.0071], "Norway": [0.3852, 0.1713, 0.0651, 0.0223, 0.0067], "Uruguay": [0.3004, 0.1498, 0.0667, 0.0232, 0.0065], "Switzerland": [0.4858, 0.1992, 0.0647, 0.0213, 0.0062], "Japan": [0.3049, 0.1485, 0.052, 0.0168, 0.0044], "Ecuador": [0.3501, 0.1181, 0.0399, 0.0115, 0.0028], "Turkiye": [0.3442, 0.122, 0.0385, 0.0107, 0.0027], "Iran": [0.3253, 0.1046, 0.0314, 0.0084, 0.0022], "Austria": [0.2165, 0.0877, 0.0294, 0.0085, 0.002], "Canada": [0.3745, 0.1293, 0.0329, 0.0088, 0.0019], "Sweden": [0.2212, 0.0895, 0.0263, 0.0068, 0.0017], "South Korea": [0.2891, 0.0858, 0.0203, 0.0052, 0.0011], "Scotland": [0.1999, 0.073, 0.0198, 0.0047, 0.001], "Egypt": [0.2837, 0.0858, 0.023, 0.0054, 0.001], "Czechia": [0.2668, 0.0768, 0.0192, 0.0044, 0.0009], "Ivory Coast": [0.2247, 0.065, 0.0165, 0.0037, 0.0007], "Paraguay": [0.215, 0.0609, 0.0162, 0.0037, 0.0007], "Ghana": [0.1633, 0.0524, 0.0142, 0.0033, 0.0006], "Algeria": [0.1655, 0.0586, 0.0167, 0.004, 0.0005], "Bosnia and Herzegovina": [0.2269, 0.0614, 0.0128, 0.0024, 0.0004], "Australia": [0.1882, 0.0503, 0.0124, 0.0026, 0.0004], "Tunisia": [0.1252, 0.0382, 0.0094, 0.0018, 0.0004], "Saudi Arabia": [0.0978, 0.0281, 0.0066, 0.0011, 0.0003], "Panama": [0.1227, 0.0369, 0.0086, 0.0017, 0.0003], "DR Congo": [0.1269, 0.0351, 0.0085, 0.0017, 0.0002], "Qatar": [0.149, 0.0329, 0.005, 0.0008, 0.0002], "South Africa": [0.1574, 0.0362, 0.0067, 0.0011, 0.0002], "Cape Verde": [0.0936, 0.0264, 0.0059, 0.0011, 0.0002], "Uzbekistan": [0.0938, 0.0233, 0.0057, 0.001, 0.0002], "Iraq": [0.0797, 0.0197, 0.0032, 0.0006, 0.0001], "New Zealand": [0.1164, 0.0226, 0.0043, 0.0007, 0.0001], "Haiti": [0.0514, 0.0116, 0.0018, 0.0003, 0.0], "Curacao": [0.0911, 0.0189, 0.0031, 0.0004, 0.0], "Jordan": [0.0595, 0.0136, 0.0024, 0.0002, 0.0]}}, {"champ": "Argentina", "won": {"73": "Canada", "75": "Morocco", "76": "Brazil", "78": "Senegal", "83": "Croatia", "84": "Spain", "86": "Argentina", "88": "Iran", "74": "Germany", "77": "France", "79": "Mexico", "80": "England", "81": "United States", "82": "Belgium", "85": "Switzerland", "87": "Portugal", "89": "France", "90": "Morocco", "91": "Brazil", "92": "England", "93": "Spain", "94": "Belgium", "95": "Argentina", "96": "Portugal", "97": "France", "98": "Spain", "99": "England", "100": "Argentina", "101": "Spain", "102": "Argentina"}, "teams": {"Argentina": [0.7512, 0.6302, 0.4995, 0.3484, 0.2196], "France": [0.8797, 0.7031, 0.5268, 0.3343, 0.2089], "Spain": [0.7706, 0.5902, 0.4679, 0.3086, 0.1894], "England": [0.8117, 0.5542, 0.3699, 0.2082, 0.1098], "Portugal": [0.6863, 0.447, 0.2099, 0.1007, 0.0391], "Brazil": [0.6519, 0.4395, 0.2177, 0.0965, 0.0387], "Morocco": [0.6272, 0.4081, 0.1928, 0.0805, 0.0309], "Mexico": [0.7855, 0.3872, 0.1934, 0.0805, 0.0308], "Belgium": [0.7595, 0.4139, 0.1693, 0.0713, 0.0249], "Netherlands": [0.5271, 0.3538, 0.1549, 0.064, 0.0235], "United States": [0.7093, 0.3863, 0.1529, 0.0633, 0.0216], "Germany": [0.7207, 0.2905, 0.1398, 0.0515, 0.0168], "Croatia": [0.5672, 0.2567, 0.1146, 0.0399, 0.0118], "Colombia": [0.5071, 0.2393, 0.0887, 0.0296, 0.0086], "Senegal": [0.5998, 0.2609, 0.0944, 0.0291, 0.0068], "Uruguay": [0.3289, 0.1583, 0.0691, 0.0211, 0.005], "Switzerland": [0.5919, 0.2213, 0.06, 0.0158, 0.0034], "Japan": [0.3328, 0.1496, 0.0437, 0.011, 0.0025], "Iran": [0.4993, 0.1536, 0.0412, 0.0097, 0.0019], "Canada": [0.5043, 0.1473, 0.0326, 0.0076, 0.0016], "Turkiye": [0.3471, 0.0998, 0.0258, 0.0057, 0.0009], "South Korea": [0.4764, 0.1136, 0.0233, 0.004, 0.0006], "Austria": [0.2358, 0.0826, 0.0204, 0.0043, 0.0006], "Ecuador": [0.3568, 0.0815, 0.0167, 0.003, 0.0005], "Egypt": [0.3634, 0.0882, 0.0173, 0.0032, 0.0005], "Panama": [0.2041, 0.0566, 0.0102, 0.0016, 0.0003], "Algeria": [0.1893, 0.0536, 0.0105, 0.0016, 0.0003], "Norway": [0.254, 0.0579, 0.0091, 0.0015, 0.0002], "Australia": [0.2019, 0.0454, 0.0091, 0.0013, 0.0002], "DR Congo": [0.1309, 0.0252, 0.0044, 0.0004, 0.0001], "Ivory Coast": [0.2055, 0.0328, 0.0041, 0.0004, 0.0001], "Sweden": [0.1439, 0.0265, 0.0034, 0.0004, 0.0], "Scotland": [0.1451, 0.0273, 0.0038, 0.0004, 0.0], "Paraguay": [0.1046, 0.0176, 0.003, 0.0003, 0.0], "Cape Verde": [0.0032, 0.0, 0.0, 0.0, 0.0], "South Africa": [0.0037, 0.0001, 0.0, 0.0, 0.0], "Czechia": [0.0065, 0.0001, 0.0, 0.0, 0.0], "Bosnia and Herzegovina": [0.0041, 0.0001, 0.0, 0.0, 0.0], "Qatar": [0.004, 0.0001, 0.0, 0.0, 0.0], "Haiti": [0.0004, 0.0, 0.0, 0.0, 0.0], "Curacao": [0.0005, 0.0, 0.0, 0.0, 0.0], "Tunisia": [0.0005, 0.0, 0.0, 0.0, 0.0], "New Zealand": [0.0006, 0.0, 0.0, 0.0, 0.0], "Saudi Arabia": [0.004, 0.0, 0.0, 0.0, 0.0], "Iraq": [0.0004, 0.0, 0.0, 0.0, 0.0], "Jordan": [0.0005, 0.0, 0.0, 0.0, 0.0], "Uzbekistan": [0.0005, 0.0, 0.0, 0.0, 0.0], "Ghana": [0.0004, 0.0, 0.0, 0.0, 0.0]}}];const WEIGHTS=[100, 85, 70, 50, 25, 0];const REC=1;const MKT={"Spain": 0.15470629894220297, "France": 0.14797993811862892, "England": 0.10636058052276454, "Portugal": 0.08956680465074908, "Argentina": 0.08508846441821163, "Brazil": 0.08103663277924916, "Germany": 0.05672564294547442, "Netherlands": 0.04051831638962458, "Norway": 0.02363568456061434, "Belgium": 0.02075328400444186, "Colombia": 0.02075328400444186, "Morocco": 0.01668401263102189, "United States": 0.013948928593149447, "Switzerland": 0.012892191578516914, "Uruguay": 0.012892191578516914, "Japan": 0.012892191578516914, "Mexico": 0.010504748693606373, "Ecuador": 0.010504748693606373, "Turkiye": 0.009350380705297982, "Croatia": 0.009350380705297982, "Senegal": 0.009350380705297982, "Sweden": 0.007032104497372862, "Austria": 0.005634997643590174, "Canada": 0.004233256936229434, "Scotland": 0.004233256936229434, "Ivory Coast": 0.0033899786620801443, "Czechia": 0.0033899786620801443, "Paraguay": 0.0028268592829970643, "Egypt": 0.0028268592829970643, "Ghana": 0.0028268592829970643, "Algeria": 0.002424172775447625, "South Korea": 0.0021219068433469233, "Bosnia and Herzegovina": 0.001698372543277677, "Tunisia": 0.001698372543277677, "Australia": 0.0014157814379070154, "Iran": 0.0012138154695893243, "DR Congo": 0.0008500346095725438, "Saudi Arabia": 0.0008500346095725438, "South Africa": 0.0008500346095725438, "Panama": 0.0008500346095725438, "Cape Verde": 0.0008500346095725438, "Qatar": 0.000566878510447779, "Uzbekistan": 0.000566878510447779, "New Zealand": 0.000566878510447779, "Iraq": 0.000566878510447779, "Jordan": 0.00034021777056462065, "Curacao": 0.00034021777056462065, "Haiti": 0.00034021777056462065};const GROUPS={"A": ["Mexico", "South Africa", "South Korea", "Czechia"], "B": ["Canada", "Bosnia and Herzegovina", "Qatar", "Switzerland"], "C": ["Brazil", "Morocco", "Haiti", "Scotland"], "D": ["United States", "Paraguay", "Australia", "Turkiye"], "E": ["Germany", "Curacao", "Ivory Coast", "Ecuador"], "F": ["Netherlands", "Japan", "Sweden", "Tunisia"], "G": ["Belgium", "Egypt", "Iran", "New Zealand"], "H": ["Spain", "Cape Verde", "Saudi Arabia", "Uruguay"], "I": ["France", "Senegal", "Iraq", "Norway"], "J": ["Argentina", "Algeria", "Austria", "Jordan"], "K": ["Portugal", "DR Congo", "Uzbekistan", "Colombia"], "L": ["England", "Croatia", "Ghana", "Panama"]};const R16={"89": [74, 77], "90": [73, 75], "91": [76, 78], "92": [79, 80], "93": [83, 84], "94": [81, 82], "95": [86, 88], "96": [85, 87]};const QF={"97": [89, 90], "98": [93, 94], "99": [91, 92], "100": [95, 96]};const SF={"101": [97, 98], "102": [99, 100]};</script>
+<script>
+const RKEY=["r16","qf","sf","f","ch"];
+const fav=(s)=>s.champ;
+function pct(x,d=1){return (100*x).toFixed(d)+"%";}
+function bar(x){let w=Math.max(0.5,100*x);return `<div class="bar"><span style="width:${w.toFixed(1)}%;background:#2dd4bf"></span></div>`;}
+function renderOdds(s){
+  const ts=Object.keys(s.teams).map(t=>({t,v:s.teams[t]}));
+  ts.sort((a,b)=>b.v[4]-a.v[4]||b.v[3]-a.v[3]);
+  let h="<table class=odds><tr><th>#</th><th class=l>Team</th><th>Champion</th><th>Final</th><th>Semi</th><th>Quarter</th><th>R16</th><th>Market</th></tr>";
+  ts.slice(0,16).forEach((r,i)=>{
+    const m=MKT[r.t]; const mt=(m!=null)?pct(m):"&ndash;";
+    h+=`<tr><td class=rank>${i+1}</td><td class=l><b>${r.t}</b></td><td class=prob>${bar(r.v[4])}<span>${pct(r.v[4])}</span></td><td>${pct(r.v[3])}</td><td>${pct(r.v[2])}</td><td>${pct(r.v[1])}</td><td>${pct(r.v[0])}</td><td class=mkt>${mt}</td></tr>`;
+  });
+  document.getElementById("oddsWrap").innerHTML=h+"</table>";
+}
+function renderGroups(s){
+  let h="<div class=groups>";
+  for(const g in GROUPS){
+    const teams=GROUPS[g].slice().sort((a,b)=>s.teams[b][0]-s.teams[a][0]);
+    h+=`<div class=gcard><h4>Group ${g}</h4>`;
+    teams.forEach((t,j)=>{h+=`<div class='grow ${j<2?"adv":"out"}'><span>${t}</span><em>${pct(s.teams[t][0],0)}</em></div>`;});
+    h+="</div>";
+  }
+  document.getElementById("groupsWrap").innerHTML=h+"</div>";
+}
+function renderBracket(s){
+  const won=s.won;
+  const tie=(a,b,w)=>`<div class=tie><div class='m ${a===w?"win":""}'>${a}</div><div class='m ${b===w?"win":""}'>${b}</div></div>`;
+  const col=(title,mnos,feed)=>{let t="";mnos.forEach(m=>{const f=feed[m];t+=tie(won[f[0]],won[f[1]],won[m]);});return `<div class=bcol><h4>${title}</h4>${t}</div>`;};
+  let h=col("Round of 16",[89,90,91,92,93,94,95,96],R16);
+  h+=col("Quarter-finals",[97,98,99,100],QF);
+  h+=col("Semi-finals",[101,102],SF);
+  h+=`<div class=bcol><h4>Final</h4>${tie(won[101],won[102],s.champ)}<div class=trophy>&#127942; ${s.champ}</div></div>`;
+  document.getElementById("bracketWrap").innerHTML=`<div class=bracket>${h}</div>`;
+}
+function update(i){
+  const s=SNAP[i], w=WEIGHTS[i];
+  document.getElementById("champName").textContent=s.champ;
+  renderOdds(s);renderGroups(s);renderBracket(s);
+  document.getElementById("wlab").innerHTML=`Market <b>${w}%</b> &nbsp;/&nbsp; Our model <b>${100-w}%</b>`;
+  const tag=(w===100)?"Pure market":(w===0)?"Pure model":(i===REC)?"Recommended":"";
+  document.getElementById("wtag").textContent=tag;
+}
+document.getElementById("wslider").addEventListener("input",e=>update(+e.target.value));
+update(REC);
+</script>
+</body></html>
