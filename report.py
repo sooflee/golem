@@ -31,10 +31,17 @@ import market
 import montecarlo
 import tournament
 
-# Slider stops: % weight on the market (rest on our independent Elo model).
-WEIGHTS = [1.0, 0.85, 0.70, 0.50, 0.25, 0.0]
-REC_IDX = 1  # 0.85 is the recommended blend
+# Slider stops, ordered left->right = pure model -> pure market (matches the
+# slider's end labels). Value is the weight on the market.
+WEIGHTS = [0.0, 0.25, 0.50, 0.70, 0.80, 0.85, 0.90, 1.0]
+REC_IDX = 5  # 0.85 (85% market / 15% model) is the recommended blend
 ROUND_KEYS = ("R16", "QF", "SF", "Final", "Champion")
+
+# Hand-drawn-style red ellipse drawn around the favorite's championship odds.
+CIRCLE_SVG = ('<svg class=circ viewBox="0 0 120 56" preserveAspectRatio=none>'
+              '<path d="M98,9 C71,1 31,4 16,17 C4,28 8,46 41,52 C77,58 114,46 110,25 '
+              'C107,11 86,6 67,8" fill=none stroke="#e23b3b" stroke-width=2.6 '
+              'stroke-linecap=round/></svg>')
 
 
 # ---------------------------------------------------------------- compute ----
@@ -99,10 +106,15 @@ def odds_table(rows, mkt, top):
     for i, r in enumerate(rows[:top], 1):
         m = mkt.get(r["team"])
         mtxt = pct(m) if m is not None else "&ndash;"
+        if i == 1:
+            ch = (f"<td class='prob circled'>{bar(r['Champion'])}"
+                  f"<span class=cw>{CIRCLE_SVG}{pct(r['Champion'])}</span></td>")
+        else:
+            ch = (f"<td class=prob>{bar(r['Champion'])}"
+                  f"<span>{pct(r['Champion'])}</span></td>")
         body.append(
             f"<tr><td class=rank>{i}</td><td class=l><b>{esc(r['team'])}</b></td>"
-            f"<td class=prob>{bar(r['Champion'])}<span>{pct(r['Champion'])}</span></td>"
-            f"<td>{pct(r['Final'])}</td><td>{pct(r['SF'])}</td>"
+            f"{ch}<td>{pct(r['Final'])}</td><td>{pct(r['SF'])}</td>"
             f"<td>{pct(r['QF'])}</td><td>{pct(r['R16'])}</td>"
             f"<td class=mkt>{mtxt}</td></tr>")
     return f"<table class=odds>{head}{''.join(body)}</table>"
@@ -121,25 +133,29 @@ def groups_grid(by_team):
     return f"<div class=groups>{''.join(cards)}</div>"
 
 
-def bracket(chalk):
+def bracket(chalk, by_team):
     won = chalk["won"]
 
-    def match(a, b, w):
-        def line(t):
-            return f"<div class='m {'win' if t == w else ''}'>{esc(t)}</div>"
-        return f"<div class=tie>{line(a)}{line(b)}</div>"
+    def line(t, w, key):
+        cls = "win" if t == w else ""
+        return (f"<div class='m {cls}'>{esc(t)}"
+                f"<em>{pct(by_team[t][key])}</em></div>")
 
-    def col(title, mnos, feeders):
-        ties = "".join(match(won[f1], won[f2], won[m])
+    def match(a, b, w, key):
+        return f"<div class=tie>{line(a, w, key)}{line(b, w, key)}</div>"
+
+    def col(title, mnos, feeders, key):
+        ties = "".join(match(won[f1], won[f2], won[m], key)
                        for m in mnos for f1, f2 in [feeders[m]])
         return f"<div class=bcol><h4>{title}</h4>{ties}</div>"
 
-    cols = [col("Round of 16", (89, 90, 91, 92, 93, 94, 95, 96), tournament.R16),
-            col("Quarter-finals", (97, 98, 99, 100), tournament.QF),
-            col("Semi-finals", (101, 102), tournament.SF)]
+    cols = [col("Round of 16", (89, 90, 91, 92, 93, 94, 95, 96), tournament.R16, "R16"),
+            col("Quarter-finals", (97, 98, 99, 100), tournament.QF, "QF"),
+            col("Semi-finals", (101, 102), tournament.SF, "SF")]
     fa, fb, champ = won[101], won[102], chalk["champion"]
-    cols.append(f"<div class=bcol><h4>Final</h4>{match(fa, fb, champ)}"
-                f"<div class=trophy>&#127942; {esc(champ)}</div></div>")
+    cols.append(f"<div class=bcol><h4>Final</h4>{match(fa, fb, champ, 'Final')}"
+                f"<div class=trophy>&#127942; {esc(champ)} "
+                f"{pct(by_team[champ]['Champion'])}</div></div>")
     return f"<div class=bracket>{''.join(cols)}</div>"
 
 
@@ -156,6 +172,20 @@ def randomness_table():
     return ("<table class=rand><tr><th class=l>Matchup (by rating)</th>"
             "<th>Win</th><th>Draw</th><th>Lose</th></tr>"
             f"{''.join(rows)}</table>")
+
+
+def ticks_html():
+    """Tick marks under the slider, positioned at each stop's actual market %
+    (so spacing reflects the real distance between stops, not even steps)."""
+    out = []
+    for i, w in enumerate(WEIGHTS):
+        # Match the slider thumb's travel: its center moves from 11px (half the
+        # 22px thumb) to width-11px, not 0%..100%. calc() mirrors that exactly.
+        left = f"calc(11px + {w:.4f} * (100% - 22px))"
+        cls = "tk rec" if i == REC_IDX else "tk"
+        out.append(f'<span class="{cls}" data-i="{i}" '
+                   f'style="left:{left}">{int(round(w * 100))}</span>')
+    return "".join(out)
 
 
 def worked_example(elo, a="Spain", b="Croatia"):
@@ -230,13 +260,18 @@ h2 .n{font-family:var(--sans);font-size:14px;font-weight:700;color:#fff;backgrou
 border-radius:50%;width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;
 vertical-align:middle;margin-right:10px}
 /* collapsible sections */
-details>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;user-select:none}
+details>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:11px;user-select:none;
+background:var(--tile);border:1px solid var(--line);border-radius:9px;padding:12px 16px;transition:border-color .15s}
+details>summary:hover{border-color:var(--ac)}
 details>summary::-webkit-details-marker{display:none}
-details>summary h2{margin:0}
-details>summary::before{content:"\\25BE";color:var(--ac);font-size:13px}
-details:not([open])>summary::before{content:"\\25B8"}
-details>summary:hover h2{color:var(--ac)}
-details[open]>summary{margin-bottom:.5em}
+details>summary h2{margin:0;font-size:20px}
+details>summary::before{content:"\\25B8";color:var(--ac);font-size:14px;transition:transform .15s}
+details[open]>summary::before{transform:rotate(90deg)}
+details>summary::after{content:"Show more \\25BE";margin-left:auto;font-family:var(--sans);font-size:12px;
+font-weight:700;color:#fff;background:var(--ac);border-radius:20px;padding:4px 12px;white-space:nowrap}
+details[open]>summary::after{content:"Hide \\25B4";color:var(--ac);background:transparent;border:1px solid var(--ac)}
+details[open]>summary{margin-bottom:.7em;border-radius:9px 9px 9px 9px}
+details:not([open]){margin-bottom:6px}
 /* section break */
 .divider{text-align:center;margin:62px 0 12px}
 .divider span{font-family:var(--sans);color:var(--ac);letter-spacing:.16em;text-transform:uppercase;
@@ -255,6 +290,10 @@ border-bottom:1.5px solid var(--ink)}
 .prob span:last-child{position:relative}
 .bar{position:absolute;inset:0;display:flex;align-items:center;padding:0 8px}
 .bar span{height:62%;border-radius:2px;display:block;opacity:.18;transition:width .3s}
+.prob.circled{overflow:visible}
+.prob .cw{position:relative;display:inline-block}
+.circ{position:absolute;left:50%;top:50%;width:158%;height:215%;
+transform:translate(-50%,-50%) rotate(-3deg);pointer-events:none;z-index:3;overflow:visible}
 /* groups */
 .groups{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
 .gcard{background:var(--tile);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
@@ -269,9 +308,12 @@ text-transform:uppercase;letter-spacing:.05em}
 .bcol{flex:1;min-width:150px}
 .bcol h4{color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.05em;margin:0 0 10px}
 .tie{background:var(--tile);border:1px solid var(--line);border-radius:7px;margin-bottom:9px;overflow:hidden}
-.m{padding:7px 10px;font-size:13px;border-bottom:1px solid var(--line)}
+.m{padding:7px 10px;font-size:13px;border-bottom:1px solid var(--line);
+display:flex;justify-content:space-between;gap:8px}
 .m:last-child{border-bottom:0}
+.m em{font-style:normal;color:var(--mut);font-variant-numeric:tabular-nums}
 .m.win{background:var(--acbg);font-weight:700;box-shadow:inset 3px 0 0 var(--ac)}
+.m.win em{color:var(--ac)}
 .trophy{margin-top:10px;text-align:center;font-weight:700;color:var(--ac);font-family:var(--serif);font-size:17px}
 /* stats */
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:18px;margin:22px 0}
@@ -299,6 +341,15 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
 background:#fff;border:3px solid var(--ac);cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.2)}
 input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#fff;border:3px solid var(--ac)}
 .ends{display:flex;justify-content:space-between;font-family:var(--sans);color:var(--mut);font-size:12px}
+.ticks{position:relative;height:24px;margin-top:5px}
+.ticks .tk{position:absolute;transform:translateX(-50%);font-family:var(--sans);font-size:11px;
+color:var(--mut);cursor:pointer;text-align:center;line-height:1}
+.ticks .tk::before{content:"";display:block;width:1px;height:6px;background:#cdc6b8;margin:0 auto 3px}
+.ticks .tk:hover{color:var(--ink)}
+.ticks .tk.rec{color:var(--ac);font-weight:700}
+.ticks .tk.rec::before{background:var(--ac);height:8px}
+.ticks .tk.on{color:var(--ink);font-weight:700}
+.ticks .tk.on::before{background:var(--ink);height:8px}
 footer{margin-top:54px;padding-top:22px;border-top:1px solid var(--line);
 font-family:var(--sans);color:var(--mut);font-size:13px;line-height:1.6}
 @media(max-width:640px){body{font-size:18px}.stats{grid-template-columns:1fr 1fr}}
@@ -320,26 +371,37 @@ every team's odds. Its current favorite: <b>&#127942; <span id=champName>{champ}
 
 <div class=tuner>
 <div class=row><div class=wlab id=wlab></div><div class=wtag id=wtag></div></div>
-<input type=range id=wslider min=0 max="{wmax}" step=1 value="{rec}">
-<div class=ends><span>&larr; Our model (Elo)</span><span>Betting market &rarr;</span></div>
+<input type=range id=wslider min=0 max=100 step=1 value="{recpct}">
+<div class=ticks>{ticks}</div>
+<div class=ends><span>&larr; Our model (Elo)</span><span>Betting market &rarr; (% on market)</span></div>
 <p class=mut style="margin:.6em 0 0">Drag to reweight the forecast between our
 independent Elo model and the betting market. Every stop is a real model run.
 Watch teams the market and the model disagree on (e.g. Argentina) move the most.</p>
+<p class=mut style="margin:.7em 0 0">The default is <b>85% market / 15% model</b>.
+Why 15%, and not 0 or 50? It's a judgment, not a fitted number: blending an
+independent model with the market usually helps a little (so the weight should be
+above zero), but the market knows more than our ratings (so it should stay small).
+We can't tune it precisely &mdash; that would need historical betting odds, which
+don't exist for past tournaments &mdash; so we chose a conservative value and built
+this slider, rather than ask you to take one number on faith.</p>
 </div>
 
 <section><h2>Title &amp; deep-run odds</h2><div id=oddsWrap>{odds}</div>
 <p class=mut>"Market" is the de-vigged bookmaker title odds. Other columns are the
-simulated probability of reaching each round at the current slider setting. At
-blends below 100% the model can read above or below the Market column &mdash;
-that's its independent (Elo) view disagreeing with the bookmakers.</p></section>
+simulated probability of reaching each round at the current slider setting. The
+<span style="color:#e23b3b;font-weight:700">red circle</span> marks the model's
+most likely champion. At blends below 100% the model can read above or below the
+Market column &mdash; that's its independent (Elo) view disagreeing with the
+bookmakers.</p></section>
 
-<section><details open><summary><h2>Group stage &mdash; predicted top two</h2></summary>
+<section><details><summary><h2>Group stage &mdash; predicted top two</h2></summary>
 <div id=groupsWrap>{groups}</div>
 <p class=mut>Highlighted = advance. The 8 best third-placed teams also qualify.</p>
 </details></section>
 
-<section><details open><summary><h2>Knockout bracket (favorites)</h2></summary>
-<p class=mut>One concrete bracket where the higher-rated side wins every game.</p>
+<section><details><summary><h2>Knockout bracket (favorites)</h2></summary>
+<p class=mut>One concrete bracket where the higher-rated side wins every game. The
+% next to each team is its chance of reaching that round (across all simulations).</p>
 <div id=bracketWrap>{bracket}</div>
 </details></section>
 
@@ -456,13 +518,15 @@ const RKEY=["r16","qf","sf","f","ch"];
 const fav=(s)=>s.champ;
 function pct(x,d=1){return (100*x).toFixed(d)+"%";}
 function bar(x){let w=Math.max(0.5,100*x);return `<div class="bar"><span style="width:${w.toFixed(1)}%;background:var(--ac)"></span></div>`;}
+const CIRC='<svg class=circ viewBox="0 0 120 56" preserveAspectRatio=none><path d="M98,9 C71,1 31,4 16,17 C4,28 8,46 41,52 C77,58 114,46 110,25 C107,11 86,6 67,8" fill=none stroke="#e23b3b" stroke-width=2.6 stroke-linecap=round/></svg>';
 function renderOdds(s){
   const ts=Object.keys(s.teams).map(t=>({t,v:s.teams[t]}));
   ts.sort((a,b)=>b.v[4]-a.v[4]||b.v[3]-a.v[3]);
   let h="<table class=odds><tr><th>#</th><th class=l>Team</th><th>Champion</th><th>Final</th><th>Semi</th><th>Quarter</th><th>R16</th><th>Market</th></tr>";
   ts.slice(0,16).forEach((r,i)=>{
     const m=MKT[r.t]; const mt=(m!=null)?pct(m):"&ndash;";
-    h+=`<tr><td class=rank>${i+1}</td><td class=l><b>${r.t}</b></td><td class=prob>${bar(r.v[4])}<span>${pct(r.v[4])}</span></td><td>${pct(r.v[3])}</td><td>${pct(r.v[2])}</td><td>${pct(r.v[1])}</td><td>${pct(r.v[0])}</td><td class=mkt>${mt}</td></tr>`;
+    const ch=(i===0)?`<td class='prob circled'>${bar(r.v[4])}<span class=cw>${CIRC}${pct(r.v[4])}</span></td>`:`<td class=prob>${bar(r.v[4])}<span>${pct(r.v[4])}</span></td>`;
+    h+=`<tr><td class=rank>${i+1}</td><td class=l><b>${r.t}</b></td>${ch}<td>${pct(r.v[3])}</td><td>${pct(r.v[2])}</td><td>${pct(r.v[1])}</td><td>${pct(r.v[0])}</td><td class=mkt>${mt}</td></tr>`;
   });
   document.getElementById("oddsWrap").innerHTML=h+"</table>";
 }
@@ -477,13 +541,14 @@ function renderGroups(s){
   document.getElementById("groupsWrap").innerHTML=h+"</div>";
 }
 function renderBracket(s){
-  const won=s.won;
-  const tie=(a,b,w)=>`<div class=tie><div class='m ${a===w?"win":""}'>${a}</div><div class='m ${b===w?"win":""}'>${b}</div></div>`;
-  const col=(title,mnos,feed)=>{let t="";mnos.forEach(m=>{const f=feed[m];t+=tie(won[f[0]],won[f[1]],won[m]);});return `<div class=bcol><h4>${title}</h4>${t}</div>`;};
-  let h=col("Round of 16",[89,90,91,92,93,94,95,96],R16);
-  h+=col("Quarter-finals",[97,98,99,100],QF);
-  h+=col("Semi-finals",[101,102],SF);
-  h+=`<div class=bcol><h4>Final</h4>${tie(won[101],won[102],s.champ)}<div class=trophy>&#127942; ${s.champ}</div></div>`;
+  const won=s.won, T=s.teams;
+  const line=(t,w,r)=>`<div class='m ${t===w?"win":""}'>${t}<em>${pct(T[t][r])}</em></div>`;
+  const tie=(a,b,w,r)=>`<div class=tie>${line(a,w,r)}${line(b,w,r)}</div>`;
+  const col=(title,mnos,feed,r)=>{let t="";mnos.forEach(m=>{const f=feed[m];t+=tie(won[f[0]],won[f[1]],won[m],r);});return `<div class=bcol><h4>${title}</h4>${t}</div>`;};
+  let h=col("Round of 16",[89,90,91,92,93,94,95,96],R16,0);
+  h+=col("Quarter-finals",[97,98,99,100],QF,1);
+  h+=col("Semi-finals",[101,102],SF,2);
+  h+=`<div class=bcol><h4>Final</h4>${tie(won[101],won[102],s.champ,3)}<div class=trophy>&#127942; ${s.champ} ${pct(T[s.champ][4])}</div></div>`;
   document.getElementById("bracketWrap").innerHTML=`<div class=bracket>${h}</div>`;
 }
 function update(i){
@@ -493,8 +558,14 @@ function update(i){
   document.getElementById("wlab").innerHTML=`Market <b>${w}%</b> &nbsp;/&nbsp; Our model <b>${100-w}%</b>`;
   const tag=(w===100)?"Pure market":(w===0)?"Pure model":(i===REC)?"Recommended":"";
   document.getElementById("wtag").textContent=tag;
+  TKS.forEach((t,j)=>t.classList.toggle("on",j===i));
+  SL.value=w;  // snap the thumb to this stop's market %
 }
-document.getElementById("wslider").addEventListener("input",e=>update(+e.target.value));
+function snapIdx(v){let b=0,bd=1e9;WEIGHTS.forEach((w,j)=>{const d=Math.abs(w-v);if(d<bd){bd=d;b=j;}});return b;}
+const TKS=[].slice.call(document.querySelectorAll(".ticks .tk"));
+const SL=document.getElementById("wslider");
+TKS.forEach(t=>t.addEventListener("click",()=>update(+t.getAttribute("data-i"))));
+SL.addEventListener("input",()=>update(snapIdx(+SL.value)));
 update(REC);
 </script>
 """
@@ -506,10 +577,11 @@ def build_page(d):
     worked = worked_example(rec["elo"]).format(sims=f"{d['sims']:,}")
     body = BODY.format(
         sims=d["sims"], champ=esc(rec["chalk"]["champion"]),
-        wmax=len(WEIGHTS) - 1, rec=REC_IDX,
+        recpct=int(round(WEIGHTS[REC_IDX] * 100)), ticks=ticks_html(),
         fit_n=fit_n, fit_year=fv.MIN_YEAR,
         odds=odds_table(rec["rows"], d["mkt"], 16),
-        groups=groups_grid(rec["by_team"]), bracket=bracket(rec["chalk"]),
+        groups=groups_grid(rec["by_team"]),
+        bracket=bracket(rec["chalk"], rec["by_team"]),
         worked=worked, rand=randomness_table(),
         base=engine.BASE_GOALS, gamma=engine.ELO_SUPREMACY,
         vig=100 * (market.overround() - 1),
