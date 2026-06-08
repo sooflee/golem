@@ -88,7 +88,7 @@ def pct(x, d=1):
 def bar(x):
     w = max(0.5, 100 * x)
     return (f'<div class="bar"><span style="width:{w:.1f}%;'
-            f'background:#2dd4bf"></span></div>')
+            f'background:var(--ac)"></span></div>')
 
 
 def odds_table(rows, mkt, top):
@@ -200,74 +200,108 @@ times over.</p>
 # ------------------------------------------------------------------ style ----
 
 STYLE = """
-:root{--bg:#0b1120;--card:#131c30;--ink:#e6edf6;--mut:#8aa0bd;--ac:#2dd4bf;--line:#22304d}
+:root{--bg:#fbfaf7;--ink:#1c1b19;--mut:#6f6a62;--ac:#1f6f54;--acbg:#eaf2ed;
+--line:#e6e1d8;--tile:#f5f2ec;
+--serif:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif;
+--sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,system-ui,sans-serif}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);
-font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
-.wrap{max-width:1000px;margin:0 auto;padding:24px}
-header{text-align:center;padding:40px 16px 18px}
-header .kick{color:var(--ac);letter-spacing:.18em;text-transform:uppercase;font-size:13px;font-weight:700}
-header h1{font-size:clamp(28px,5vw,46px);margin:.2em 0}
-header p{color:var(--mut);max-width:680px;margin:0 auto}
-.pick{margin:22px auto;display:inline-block;background:var(--card);border:1px solid var(--line);
-border-radius:14px;padding:14px 26px}
-.pick b{font-size:26px}.pick span{color:var(--ac)}
-.tuner{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 24px;margin:20px 0}
-.tuner .row{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px}
-.tuner .wlab{font-size:16px}.tuner .wlab b{color:var(--ac)}
-.tuner .wtag{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;
-color:#06231f;background:var(--ac);padding:3px 10px;border-radius:20px}
-.tuner .wtag:empty{display:none}
-input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:5px;
-background:linear-gradient(90deg,#3b82f6,#2dd4bf);margin:16px 0 6px;cursor:pointer}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;
-background:#fff;border:3px solid var(--ac);cursor:pointer}
-input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#fff;border:3px solid var(--ac)}
-.ends{display:flex;justify-content:space-between;color:var(--mut);font-size:12px}
-.divider{text-align:center;margin:46px 0 6px}
-.divider span{color:var(--ac);letter-spacing:.16em;text-transform:uppercase;font-size:13px;font-weight:700}
-.divider h2{font-size:30px;border:0;margin:.2em 0}
-section{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 24px;margin:20px 0}
-h2{font-size:22px;margin:.1em 0 .6em;border-bottom:1px solid var(--line);padding-bottom:.4em}
-h2 .n{color:var(--ac);margin-right:8px}
-table{width:100%;border-collapse:collapse;font-size:14px}
-th,td{padding:7px 8px;text-align:right;border-bottom:1px solid var(--line)}
-th{color:var(--mut);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 var(--serif);
+-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+.wrap{max-width:900px;margin:0 auto;padding:20px 22px 64px}
+p{margin:0 0 1em}em{font-style:italic}a{color:var(--ac)}
+ul{padding-left:1.1em}li{margin:.35em 0}
+.mut{font-family:var(--sans);color:var(--mut);font-size:13.5px;line-height:1.55}
+code{background:#f0ede5;padding:2px 6px;border-radius:4px;font-size:14px;
+font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+/* masthead */
+.kick{font-family:var(--sans);color:var(--ac);letter-spacing:.14em;text-transform:uppercase;
+font-size:12px;font-weight:700}
+header{padding:34px 0 22px;margin-bottom:8px;border-bottom:2px solid var(--ink)}
+header h1{font-size:clamp(26px,3.6vw,38px);line-height:1.12;letter-spacing:-.015em;
+margin:.2em 0 .3em;font-weight:700}
+.dek{font-size:18px;line-height:1.5;color:#3a3833;margin:0 0 18px}
+.dek b{color:var(--ac)}
+.byline{font-family:var(--sans);font-size:13.5px;color:var(--mut)}
+.byline a{color:var(--ac)}
+/* article flow */
+section{margin:36px 0;padding:0}
+h2{font-size:23px;line-height:1.25;font-weight:700;letter-spacing:-.01em;margin:0 0 .5em}
+h2 .n{font-family:var(--sans);font-size:14px;font-weight:700;color:#fff;background:var(--ac);
+border-radius:50%;width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;
+vertical-align:middle;margin-right:10px}
+/* collapsible sections */
+details>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;user-select:none}
+details>summary::-webkit-details-marker{display:none}
+details>summary h2{margin:0}
+details>summary::before{content:"\\25BE";color:var(--ac);font-size:13px}
+details:not([open])>summary::before{content:"\\25B8"}
+details>summary:hover h2{color:var(--ac)}
+details[open]>summary{margin-bottom:.5em}
+/* section break */
+.divider{text-align:center;margin:62px 0 12px}
+.divider span{font-family:var(--sans);color:var(--ac);letter-spacing:.16em;text-transform:uppercase;
+font-size:12px;font-weight:700}
+.divider h2{font-size:27px;margin:.12em 0}
+.divider:after{content:"";display:block;width:56px;height:2px;background:var(--ac);margin:14px auto 0}
+/* tables as figures */
+table{width:100%;border-collapse:collapse;font-family:var(--sans);font-size:14px;
+font-variant-numeric:tabular-nums;margin:16px 0}
+th,td{padding:9px 8px;text-align:right;border-bottom:1px solid var(--line)}
+th{color:var(--mut);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.04em;
+border-bottom:1.5px solid var(--ink)}
 .l{text-align:left}.rank{color:var(--mut)}.mkt{color:var(--mut)}
+.odds tr:hover td{background:var(--tile)}
 .prob{position:relative;min-width:120px}
-.prob span:last-child{position:relative;font-variant-numeric:tabular-nums}
-.bar{position:absolute;inset:0;display:flex;align-items:center;padding:0 8px;opacity:.22}
-.bar span{height:60%;border-radius:3px;display:block;transition:width .3s}
-.groups{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
-.gcard{background:#0e1626;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
-.gcard h4{margin:0 0 8px;font-size:13px;color:var(--mut)}
-.grow{display:flex;justify-content:space-between;font-size:13px;padding:3px 0}
+.prob span:last-child{position:relative}
+.bar{position:absolute;inset:0;display:flex;align-items:center;padding:0 8px}
+.bar span{height:62%;border-radius:2px;display:block;opacity:.18;transition:width .3s}
+/* groups */
+.groups{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.gcard{background:var(--tile);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.gcard h4{font-family:var(--sans);margin:0 0 8px;font-size:11px;color:var(--mut);
+text-transform:uppercase;letter-spacing:.05em}
+.grow{display:flex;justify-content:space-between;font-family:var(--sans);font-size:13px;padding:3px 0}
 .grow em{font-style:normal;color:var(--mut)}
-.grow.adv span{font-weight:600}.grow.adv em{color:var(--ac)}
-.grow.out{opacity:.45}
-.bracket{display:flex;gap:14px;overflow-x:auto;padding-bottom:6px}
-.bcol{flex:1;min-width:160px}
-.bcol h4{color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin:0 0 10px}
-.tie{background:#0e1626;border:1px solid var(--line);border-radius:8px;margin-bottom:10px;overflow:hidden}
+.grow.adv{font-weight:600}.grow.adv em{color:var(--ac);font-weight:700}
+.grow.out{opacity:.42}
+/* bracket */
+.bracket{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;font-family:var(--sans)}
+.bcol{flex:1;min-width:150px}
+.bcol h4{color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.05em;margin:0 0 10px}
+.tie{background:var(--tile);border:1px solid var(--line);border-radius:7px;margin-bottom:9px;overflow:hidden}
 .m{padding:7px 10px;font-size:13px;border-bottom:1px solid var(--line)}
 .m:last-child{border-bottom:0}
-.m.win{background:rgba(45,212,191,.14);font-weight:600}
-.trophy{margin-top:10px;text-align:center;font-weight:700;color:var(--ac)}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:14px 0}
-.stat{background:#0e1626;border:1px solid var(--line);border-radius:10px;padding:14px;text-align:center}
-.stat b{display:block;font-size:26px;color:var(--ac)}
-.stat small{color:var(--mut)}
-p,li{color:#cdd9ea}.mut{color:var(--mut);font-size:13px}
-a{color:var(--ac)}
-code{background:#0e1626;padding:2px 6px;border-radius:5px;font-size:13px}
-.note{background:#0e1626;border-left:3px solid var(--ac);border-radius:0 8px 8px 0;
-padding:12px 16px;margin:14px 0;font-size:14.5px}
+.m.win{background:var(--acbg);font-weight:700;box-shadow:inset 3px 0 0 var(--ac)}
+.trophy{margin-top:10px;text-align:center;font-weight:700;color:var(--ac);font-family:var(--serif);font-size:17px}
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:18px;margin:22px 0}
+.stat{text-align:center}
+.stat b{display:block;font-size:34px;color:var(--ac);font-weight:700;line-height:1}
+.stat small{font-family:var(--sans);color:var(--mut);font-size:12.5px;display:block;margin-top:7px;line-height:1.4}
+/* aside / formula */
+.note{background:var(--acbg);border-left:3px solid var(--ac);border-radius:0 6px 6px 0;
+padding:13px 18px;margin:18px 0;font-size:16px;line-height:1.6}
 .note b{color:var(--ac)}
-.formula{background:#0a0f1c;border:1px solid var(--line);border-radius:8px;padding:12px 16px;margin:10px 0;
-font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13.5px;white-space:pre-wrap;color:#bfe9e2}
-p.step{color:var(--ac);font-weight:700;margin:1.3em 0 .3em;font-size:14px}
-footer{text-align:center;color:var(--mut);font-size:13px;padding:30px 16px}
-@media(max-width:640px){.stats{grid-template-columns:1fr 1fr}}
+.formula{background:#f3f1ea;border:1px solid var(--line);border-radius:6px;padding:12px 16px;margin:12px 0;
+font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13.5px;white-space:pre-wrap;color:#2a4a40;line-height:1.5}
+p.step{font-family:var(--sans);color:var(--ac);font-weight:700;margin:1.4em 0 .3em;
+font-size:13px;text-transform:uppercase;letter-spacing:.04em}
+/* slider figure */
+.tuner{background:var(--tile);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin:18px 0}
+.tuner .row{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px}
+.tuner .wlab{font-family:var(--sans);font-size:15px}.tuner .wlab b{color:var(--ac)}
+.tuner .wtag{font-family:var(--sans);font-size:11px;font-weight:700;text-transform:uppercase;
+letter-spacing:.06em;color:#fff;background:var(--ac);padding:3px 10px;border-radius:20px}
+.tuner .wtag:empty{display:none}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:5px;border-radius:5px;
+background:linear-gradient(90deg,#cdc6b8,var(--ac));margin:16px 0 6px;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;
+background:#fff;border:3px solid var(--ac);cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#fff;border:3px solid var(--ac)}
+.ends{display:flex;justify-content:space-between;font-family:var(--sans);color:var(--mut);font-size:12px}
+footer{margin-top:54px;padding-top:22px;border-top:1px solid var(--line);
+font-family:var(--sans);color:var(--mut);font-size:13px;line-height:1.6}
+@media(max-width:640px){body{font-size:18px}.stats{grid-template-columns:1fr 1fr}}
 """
 
 
@@ -275,12 +309,13 @@ footer{text-align:center;color:var(--mut);font-size:13px;padding:30px 16px}
 
 BODY = """
 <header>
-<div class=kick>Monte Carlo &bull; Market-calibrated &bull; Backtested</div>
-<h1>2026 FIFA World Cup &mdash; Model Forecast</h1>
-<p>An Elo-driven Monte Carlo model anchored to the betting market, with per-match
-randomness fit to 50 years of results. {sims:,} simulated tournaments per setting.
-<a href="#how">Jump to how it works &darr;</a></p>
-<div class=pick>Most likely champion<br><b>&#127942; <span id=champName>{champ}</span></b></div>
+<div class=kick>Forecast &middot; World Cup 2026</div>
+<h1>Who will win the 2026 World Cup?</h1>
+<p class=dek>A Monte Carlo model &mdash; anchored to the betting market and tuned to
+25 years of match results &mdash; plays the tournament {sims:,} times to estimate
+every team's odds. Its current favorite: <b>&#127942; <span id=champName>{champ}</span></b>.</p>
+<div class=byline>By a simulation model &middot; {date} &middot;
+<a href="#how">How it works &darr;</a></div>
 </header>
 
 <div class=tuner>
@@ -298,12 +333,15 @@ simulated probability of reaching each round at the current slider setting. At
 blends below 100% the model can read above or below the Market column &mdash;
 that's its independent (Elo) view disagreeing with the bookmakers.</p></section>
 
-<section><h2>Group stage &mdash; predicted top two</h2><div id=groupsWrap>{groups}</div>
-<p class=mut>Highlighted = advance. The 8 best third-placed teams also qualify.</p></section>
+<section><details open><summary><h2>Group stage &mdash; predicted top two</h2></summary>
+<div id=groupsWrap>{groups}</div>
+<p class=mut>Highlighted = advance. The 8 best third-placed teams also qualify.</p>
+</details></section>
 
-<section><h2>Knockout bracket (favorites)</h2>
+<section><details open><summary><h2>Knockout bracket (favorites)</h2></summary>
 <p class=mut>One concrete bracket where the higher-rated side wins every game.</p>
-<div id=bracketWrap>{bracket}</div></section>
+<div id=bracketWrap>{bracket}</div>
+</details></section>
 
 <div class=divider id=how><span>The method</span><h2>How it works</h2></div>
 
@@ -373,9 +411,9 @@ recommended default is <b>85% market / 15% model</b> &mdash; lean on the market
 (historically the best single forecast) while keeping the model as a hedge.</p></section>
 
 <section><h2><span class=n>6</span>Does it actually work? (Backtesting)</h2>
-<p>A forecast you never check is just an opinion. We tested the engine on
-<b>{bt_n:,} real World Cup matches ({bt_lo}&ndash;{bt_hi})</b>, predicting each from the
-teams' ratings beforehand:</p>
+<p>A forecast you never check is just an opinion. We tested the <em>match
+engine</em> on <b>{bt_n:,} real World Cup matches ({bt_lo}&ndash;{bt_hi})</b>,
+predicting each from the two teams' reconstructed Elo beforehand:</p>
 <div class=stats>
 <div class=stat><b>{bt_impr:.1f}%</b><small>better than a naive baseline (log-loss)</small></div>
 <div class=stat><b>{bt_acc:.0f}%</b><small>favorite correctly picked (decisive games)</small></div>
@@ -384,7 +422,13 @@ teams' ratings beforehand:</p>
 <p>We score with <b>log-loss</b>, which rewards being confident <em>and</em> right
 and punishes confident-but-wrong, so you can't game it by hedging. The randomness
 we measured on ordinary games was also near-optimal for World Cup games &mdash; so
-we didn't tune the model to its own data.</p></section>
+we didn't tune the model to its own data.</p>
+<div class=note><b>What this does and doesn't test.</b> The backtest scores the
+match engine &mdash; how a rating gap becomes a result &mdash; using each team's
+<em>reconstructed Elo</em> at the time, with no market data and no ensemble. It
+validates the simulation machinery that carries every number here through the
+bracket, but <em>not</em> the market calibration or the 85/15 blend (Section&nbsp;5):
+those have no historical betting odds to test against.</div></section>
 
 <section><h2>What it can't do (being honest)</h2>
 <ul>
@@ -411,7 +455,7 @@ SCRIPT = """
 const RKEY=["r16","qf","sf","f","ch"];
 const fav=(s)=>s.champ;
 function pct(x,d=1){return (100*x).toFixed(d)+"%";}
-function bar(x){let w=Math.max(0.5,100*x);return `<div class="bar"><span style="width:${w.toFixed(1)}%;background:#2dd4bf"></span></div>`;}
+function bar(x){let w=Math.max(0.5,100*x);return `<div class="bar"><span style="width:${w.toFixed(1)}%;background:var(--ac)"></span></div>`;}
 function renderOdds(s){
   const ts=Object.keys(s.teams).map(t=>({t,v:s.teams[t]}));
   ts.sort((a,b)=>b.v[4]-a.v[4]||b.v[3]-a.v[3]);
