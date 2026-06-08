@@ -28,12 +28,16 @@ import fit_variance as fv
 import histelo
 
 
-def wc_matches():
-    """Settled World Cup matches with pre-match Elo diff and 90-min result."""
+def wc_matches(min_year=1990):
+    """Settled World Cup matches (from min_year on) with pre-match Elo diff and
+    90-minute result. We restrict to the modern era by default: early-history
+    reconstructed Elo is thin, and 1930s-80s football isn't representative of
+    how the 2026 model will be used."""
     out = []
     for r in histelo.replay():
         t = r["tournament"].lower()
-        if r["settled"] and "fifa world cup" in t and "qual" not in t:
+        if (r["settled"] and "fifa world cup" in t and "qual" not in t
+                and int(r["date"][:4]) >= min_year):
             out.append(r)
     return out
 

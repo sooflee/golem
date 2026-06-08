@@ -103,10 +103,10 @@ Two views of the prediction:
 
 ## Validation (`backtest.py`)
 
-The per-match model is scored against **957 real World Cup matches (1990-2022)**,
+The per-match model is scored against **552 real World Cup matches (1990-2022)**,
 using each team's pre-match reconstructed Elo:
 
-- **log-loss 0.974 vs 1.058** for a base-rate baseline — a **7.9% improvement**
+- **log-loss 0.977 vs 1.065** for a base-rate baseline — an **8.2% improvement**
   (large, for high-variance W/D/L football).
 - **Favorite picks the winner 73%** of decisive games; calibration tracks
   reality across all confidence buckets.

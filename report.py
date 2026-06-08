@@ -65,11 +65,13 @@ def gather(sims):
     g, b, rho = engine.ELO_SUPREMACY, engine.BASE_GOALS, engine.DRAW_RHO
     ll, brier, acc = backtest.score(bt_matches, g, b, rho)
     base_ll = backtest.baseline_logloss(bt_matches)
+    bt_years = [int(m["date"][:4]) for m in bt_matches]
 
     return {
         "snaps": snaps, "rec": rec, "mkt": mkt, "sims": rec["n"],
         "bt": {"n": len(bt_matches), "ll": ll, "acc": acc, "base_ll": base_ll,
-               "impr": 100 * (base_ll - ll) / base_ll},
+               "impr": 100 * (base_ll - ll) / base_ll,
+               "lo": min(bt_years), "hi": max(bt_years)},
     }
 
 
@@ -190,7 +192,7 @@ neutral venue. Exactly what the engine does:</p>
 </div>
 <p class=mut>Most likely exact score: {esc(a)} {best[0]}&ndash;{best[1]} {esc(b)}.
 {esc(b)} still avoids defeat {pct(d+l,0)} of the time &mdash; that's the
-randomness from Step&nbsp;4. A tournament is just this, 104 times, repeated many
+randomness from Step&nbsp;4. A tournament is just this, 103 times, repeated many
 times over.</p>
 """
 
@@ -292,7 +294,9 @@ Watch teams the market and the model disagree on (e.g. Argentina) move the most.
 
 <section><h2>Title &amp; deep-run odds</h2><div id=oddsWrap>{odds}</div>
 <p class=mut>"Market" is the de-vigged bookmaker title odds. Other columns are the
-simulated probability of reaching each round at the current slider setting.</p></section>
+simulated probability of reaching each round at the current slider setting. At
+blends below 100% the model can read above or below the Market column &mdash;
+that's its independent (Elo) view disagreeing with the bookmakers.</p></section>
 
 <section><h2>Group stage &mdash; predicted top two</h2><div id=groupsWrap>{groups}</div>
 <p class=mut>Highlighted = advance. The 8 best third-placed teams also qualify.</p></section>
@@ -309,7 +313,8 @@ once, and luck matters. So we ask an answerable question:
 <b>if this exact tournament were replayed thousands of times, how often would each
 team win?</b></p>
 <p>That's a <b>Monte Carlo simulation</b>. Simulate one match realistically &mdash;
-with the right randomness &mdash; and you can play all 104 matches, repeat {sims:,}
+with the right randomness &mdash; and you can play all 103 matches (we skip the
+dead-rubber 3rd-place playoff), repeat {sims:,}
 times, and just <em>count</em>. Win 16,400 of 100,000 &rarr; a 16.4% title chance.</p>
 <div class=note><b>The whole challenge</b> is three things: (1) how good is each
 team, (2) how "how good" becomes a result <em>including luck</em>, and (3) the
@@ -347,16 +352,21 @@ So we <b>measure them from {fit_n:,} real internationals since {fit_year}</b>
 <em>actually happened</em> most likely (<b>maximum likelihood</b>). The verdict on
 football's built-in randomness:</p>
 {rand}
-<div class=note><b>This is why no team dominates.</b> Even a clear favorite loses
-or draws ~40% of single games. Claiming someone is 26% to win seven knockout
-rounds quietly assumes football is far less random than {fit_n:,} games say.</div></section>
+<div class=note><b>This is why upsets are common.</b> Even a clear favorite loses
+or draws ~40% of single games. A high title number is only justified if it comes
+from a genuine <em>rating gap</em> &mdash; not from pretending matches are more
+predictable than {fit_n:,} games show. (A model that reaches, say, 26% by
+under-estimating this randomness is over-confident; here the randomness is fit to
+the data, so any concentration comes from the gaps themselves &mdash; which is why
+the slider's pure-model end can be high yet still honest.)</div></section>
 
 <section><h2><span class=n>5</span>Trusting the betting market (calibration &amp; the slider)</h2>
 <p>The <b>betting market</b> is the best-calibrated forecast there is &mdash;
 millions of people with real money, reacting to injuries and news. Bookmaker odds
 sum to over 100%; that overage (~{vig:.0f}% here) is their margin, the "vig," which
 we strip out. Then we <b>calibrate</b>: nudge each team's rating until <em>our</em>
-simulated title odds match the market's.</p>
+simulated title odds match that blended target (market + our model, at the
+slider's mix).</p>
 <p>The slider at the top blends the two: <b>0% = our pure Elo model</b> (free to
 disagree with the market, Goldman-style), <b>100% = the pure market</b>. The
 recommended default is <b>85% market / 15% model</b> &mdash; lean on the market
@@ -364,7 +374,7 @@ recommended default is <b>85% market / 15% model</b> &mdash; lean on the market
 
 <section><h2><span class=n>6</span>Does it actually work? (Backtesting)</h2>
 <p>A forecast you never check is just an opinion. We tested the engine on
-<b>{bt_n:,} real World Cup matches (1990&ndash;2022)</b>, predicting each from the
+<b>{bt_n:,} real World Cup matches ({bt_lo}&ndash;{bt_hi})</b>, predicting each from the
 teams' ratings beforehand:</p>
 <div class=stats>
 <div class=stat><b>{bt_impr:.1f}%</b><small>better than a naive baseline (log-loss)</small></div>
@@ -379,7 +389,8 @@ we didn't tune the model to its own data.</p></section>
 <section><h2>What it can't do (being honest)</h2>
 <ul>
 <li>Ratings are fixed at kickoff &mdash; no reaction to a mid-tournament injury.</li>
-<li>A few lower-ranked teams use estimated ratings (calibration mostly washes this out).</li>
+<li>Ratings are a single pre-tournament snapshot from one provider
+(eloratings.net) — a different rating system would shift the edges somewhat.</li>
 <li>Group tiebreakers are simplified versus FIFA's full head-to-head rules.</li>
 <li>We validated the engine and randomness, but not the exact blend weight &mdash;
 that needs historical betting odds we don't have. (Hence the slider: judge for yourself.)</li>
@@ -460,6 +471,7 @@ def build_page(d):
         vig=100 * (market.overround() - 1),
         bt_n=d["bt"]["n"], bt_impr=d["bt"]["impr"], bt_acc=100 * d["bt"]["acc"],
         bt_ll=d["bt"]["ll"], bt_base=d["bt"]["base_ll"],
+        bt_lo=d["bt"]["lo"], bt_hi=d["bt"]["hi"],
         date=datetime.date.today().strftime("%B %-d, %Y"))
 
     datajs = ("<script>"
@@ -482,7 +494,7 @@ def build_page(d):
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument("--sims", type=int, default=60000)
+    p.add_argument("--sims", type=int, default=100000)
     p.add_argument("--outdir", default=".")
     args = p.parse_args()
     data.validate()
