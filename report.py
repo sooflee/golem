@@ -274,6 +274,7 @@ h2{font-size:23px;line-height:1.25;font-weight:700;letter-spacing:-.01em;margin:
 h2 .n{font-family:var(--sans);font-size:14px;font-weight:700;color:#fff;background:var(--ac);
 border-radius:50%;width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;
 vertical-align:middle;margin-right:10px}
+h3{font-size:18px;font-weight:700;margin:1.6em 0 .4em;letter-spacing:-.01em}
 /* collapsible sections */
 details>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:11px;user-select:none;
 background:var(--tile);border:1px solid var(--line);border-radius:9px;padding:12px 16px;transition:border-color .15s}
@@ -496,11 +497,10 @@ goals, raindrops, typos on a page):</p>
 <div class=formula>goals_A ~ Poisson( {base} &times; e^( {gamma}&times;(win_exp&minus;0.5)) )
 goals_B ~ Poisson( {base} &times; e^(&minus;{gamma}&times;(win_exp&minus;0.5)) )</div>
 <p>Two even teams average {base} each; a favorite's average rises. The
-<b>Dixon-Coles correction</b> nudges low scores so the draw rate matches reality.</p></section>
+<b>Dixon-Coles correction</b> nudges low scores so the draw rate matches reality.</p>
+<h3>Let's run one: Spain vs Croatia</h3>{worked}</section>
 
-<section><h2><span class=n>3</span>A worked example: Spain vs Croatia</h2>{worked}</section>
-
-<section><h2><span class=n>4</span>The key step: measuring how random football is</h2>
+<section><h2><span class=n>3</span>The key step: measuring how random football is</h2>
 <p>The two numbers above ({base} and {gamma}) control <b>how much a rating edge
 really decides a match versus how much is luck</b>. Guess wrong and the model gets
 over-confident or under-confident.
@@ -517,7 +517,7 @@ under-estimating this randomness is over-confident; here the randomness is fit t
 the data, so any concentration comes from the gaps themselves &mdash; which is why
 the slider's pure-model end can be high yet still honest.)</div></section>
 
-<section><h2><span class=n>5</span>Trusting the betting market (calibration &amp; the slider)</h2>
+<section><h2><span class=n>4</span>Trusting the betting market (calibration &amp; the slider)</h2>
 <p>The <b>betting market</b> is the best-calibrated forecast there is &mdash;
 millions of people with real money, reacting to injuries and news. You can
 calibrate to either market (the buttons above the slider) &mdash; a
