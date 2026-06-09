@@ -593,7 +593,8 @@ function renderBracket(s){
 function update(i){
   CUR=i;
   const s=SNAP[SRC][i], w=WEIGHTS[i];
-  document.getElementById("champName").textContent=s.champ;
+  const lead=Object.keys(s.teams).reduce((a,b)=>s.teams[b][4]>s.teams[a][4]?b:a);
+  document.getElementById("champName").textContent=lead;
   renderOdds(s);renderGroups(s);renderBracket(s);
   document.getElementById("wlab").innerHTML=`Market <b>${w}%</b> &nbsp;/&nbsp; Our model <b>${100-w}%</b>`;
   const tag=(w===100)?"Pure market":(w===0)?"Pure model":(i===REC)?"Recommended":"";
@@ -625,7 +626,7 @@ def build_page(d):
         f'data-src="{s}">{esc(lbl)}</button>'
         for s, lbl in market.SOURCES.items())
     body = BODY.format(
-        sims=d["sims"], champ=esc(rec["chalk"]["champion"]),
+        sims=d["sims"], champ=esc(rec["rows"][0]["team"]),
         recpct=int(round(WEIGHTS[REC_IDX] * 100)), ticks=ticks_html(),
         mktbtns=mktbtns, fit_n=fit_n, fit_year=fv.MIN_YEAR,
         odds=odds_table(rec["rows"], d["mkt"][DEFAULT_SOURCE], 16),
