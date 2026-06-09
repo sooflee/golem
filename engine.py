@@ -18,7 +18,11 @@ Re-fit anytime with `python3 fit_variance.py` and update the three constants.
 import math
 
 # Rating bump for a host nation (USA / Canada / Mexico) in any match it plays.
-HOME_ADVANTAGE_ELO = 65.0
+# Fit from data (fit_variance.home_advantage_fit): 96 Elo maximizes the
+# likelihood of 17,896 non-neutral internationals since 2000 — in line with
+# eloratings.net's house home-advantage of 100 (consistent, since our ratings
+# come from there). Market calibration absorbs most of it for the title odds.
+HOME_ADVANTAGE_ELO = 96.0
 
 # --- fitted by fit_variance.py on 24,787 internationals (2000+, recent only) ---
 BASE_GOALS = 1.178       # expected goals per team in an evenly matched game

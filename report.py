@@ -47,43 +47,46 @@ CIRCLE_SVG = ('<svg class=circ viewBox="0 0 120 56" preserveAspectRatio=none>'
 
 # ---------------------------------------------------------------- compute ----
 
+def _snap(elo, sims):
+    counts, n = montecarlo.run(sims, seed=0, elo=elo)
+    rows = montecarlo.probabilities(counts, n)
+    by_team = {r["team"]: r for r in rows}
+    chalk = tournament.simulate(elo=elo, deterministic=True)
+    snap = {"champ": chalk["champion"],
+            "won": {str(m): chalk["won"][m] for m in chalk["won"]},
+            "teams": {t: [round(by_team[t][k], 4) for k in ROUND_KEYS]
+                      for t in by_team}}
+    return snap, rows, by_team, chalk, n
+
+
 def gather(sims):
-    snaps = {}   # source -> [per-weight snapshot]
-    mkt = {}     # source -> de-vigged implied probs
-    rec = None   # static initial render uses the default source at REC_IDX
+    # snaps[host_state][source] = [per-weight snapshot]. Host "off" re-simulates
+    # the same calibrated ratings with the home bump removed (engine global), so
+    # it shows how much of the hosts' odds is home advantage.
+    host_on = engine.HOME_ADVANTAGE_ELO
+    snaps = {"on": {}, "off": {}}
+    mkt = {}
+    rec = None
     for src in market.SOURCES:
         mkt[src] = market.implied_probabilities(source=src)
-        snaps[src] = []
+        snaps["on"][src] = []
+        snaps["off"][src] = []
         for i, w in enumerate(WEIGHTS):
-            print(f"  {src} {int(w*100)}% market ...", flush=True)
+            print(f"  {src} {int(w*100)}% ...", flush=True)
+            engine.HOME_ADVANTAGE_ELO = host_on  # calibrate with hosts boosted
             elo = calibrate.load_or_calibrate(market_weight=w, bias_k=1.05,
                                               source=src, verbose=False)
-            counts, n = montecarlo.run(sims, seed=0, elo=elo)
-            rows = montecarlo.probabilities(counts, n)
-            by_team = {r["team"]: r for r in rows}
-            chalk = tournament.simulate(elo=elo, deterministic=True)
-            snaps[src].append({
-                "champ": chalk["champion"],
-                "won": {str(m): chalk["won"][m] for m in chalk["won"]},
-                "teams": {t: [round(by_team[t][k], 4) for k in ROUND_KEYS]
-                          for t in by_team},
-            })
+            engine.HOME_ADVANTAGE_ELO = host_on
+            son, rows, by_team, chalk, n = _snap(elo, sims)
+            snaps["on"][src].append(son)
+            engine.HOME_ADVANTAGE_ELO = 0.0  # re-sim with home edge removed
+            soff = _snap(elo, sims)[0]
+            snaps["off"][src].append(soff)
             if src == DEFAULT_SOURCE and i == REC_IDX:
                 rec = {"rows": rows, "by_team": by_team, "chalk": chalk,
                        "elo": elo, "n": n}
-
-    bt_matches = backtest.wc_matches()
-    g, b, rho = engine.ELO_SUPREMACY, engine.BASE_GOALS, engine.DRAW_RHO
-    ll, brier, acc = backtest.score(bt_matches, g, b, rho)
-    base_ll = backtest.baseline_logloss(bt_matches)
-    bt_years = [int(m["date"][:4]) for m in bt_matches]
-
-    return {
-        "snaps": snaps, "rec": rec, "mkt": mkt, "sims": rec["n"],
-        "bt": {"n": len(bt_matches), "ll": ll, "acc": acc, "base_ll": base_ll,
-               "impr": 100 * (base_ll - ll) / base_ll,
-               "lo": min(bt_years), "hi": max(bt_years)},
-    }
+    engine.HOME_ADVANTAGE_ELO = host_on  # restore
+    return {"snaps": snaps, "rec": rec, "mkt": mkt, "sims": rec["n"]}
 
 
 # ----------------------------------------------------------------- helpers ---
@@ -351,10 +354,10 @@ letter-spacing:.06em;color:#fff;background:var(--ac);padding:3px 10px;border-rad
 padding-bottom:14px;border-bottom:1px solid var(--line)}
 .mlbl{font-family:var(--sans);font-size:12px;font-weight:700;text-transform:uppercase;
 letter-spacing:.06em;color:var(--mut)}
-.mbtn{font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;
+.mbtn,.hbtn{font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;
 background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:20px;padding:5px 14px}
-.mbtn:hover{border-color:var(--ac)}
-.mbtn.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.mbtn:hover,.hbtn:hover{border-color:var(--ac)}
+.mbtn.on,.hbtn.on{background:var(--ac);color:#fff;border-color:var(--ac)}
 .showctl{display:flex;align-items:center;gap:7px;margin-top:12px;flex-wrap:wrap}
 .nbtn{font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;background:#fff;
 color:var(--ink);border:1px solid var(--line);border-radius:18px;padding:4px 13px}
@@ -413,6 +416,7 @@ every team's odds. Its current favorite: <b>&#127942; <span id=champName>{champ}
 
 <div class=tuner>
 <div class=mkts><span class=mlbl>Calibrate to market:</span>{mktbtns}</div>
+<div class=mkts><span class=mlbl>Host advantage (USA/MEX/CAN):</span><button class="hbtn on" data-h=on>On</button><button class=hbtn data-h=off>Off</button></div>
 <div class=row><div class=wlab id=wlab></div><div class=wtag id=wtag></div></div>
 <input type=range id=wslider min=0 max=100 step=1 value="{recpct}">
 <div class=ticks>{ticks}</div>
@@ -507,36 +511,17 @@ the slider's pure-model end can be high yet still honest.)</div></section>
 <section><h2><span class=n>5</span>Trusting the betting market (calibration &amp; the slider)</h2>
 <p>The <b>betting market</b> is the best-calibrated forecast there is &mdash;
 millions of people with real money, reacting to injuries and news. You can
-calibrate to either of two markets (the buttons above the slider): a
+calibrate to either market (the buttons above the slider) &mdash; a
 <b>sportsbook</b> futures board (ESPN) or the <b>Kalshi exchange</b>. Their prices
-sum to over 100% &mdash; that overage (the "vig", ~{vig:.0f}% for the sportsbook
-but only ~{vig_k:.0f}% on the peer-to-peer exchange) we strip out. Then we
+sum to over 100% &mdash; that overage (the "vig",
+~{vig:.0f}% for the sportsbook but only ~{vig_k:.0f}% on the peer-to-peer
+exchange) we strip out. Then we
 <b>calibrate</b>: nudge each team's rating until <em>our</em> simulated title odds
 match that blended target (market + our model, at the slider's mix).</p>
 <p>The slider at the top blends the two: <b>0% = our pure Elo model</b> (free to
 disagree with the market, Goldman-style), <b>100% = the pure market</b>. The
 recommended default is <b>85% market / 15% model</b> &mdash; lean on the market
 (historically the best single forecast) while keeping the model as a hedge.</p></section>
-
-<section><h2><span class=n>6</span>Does it actually work? (Backtesting)</h2>
-<p>A forecast you never check is just an opinion. We tested the <em>match
-engine</em> on <b>{bt_n:,} real World Cup matches ({bt_lo}&ndash;{bt_hi})</b>,
-predicting each from the two teams' reconstructed Elo beforehand:</p>
-<div class=stats>
-<div class=stat><b>{bt_impr:.1f}%</b><small>better than a naive baseline (log-loss)</small></div>
-<div class=stat><b>{bt_acc:.0f}%</b><small>favorite correctly picked (decisive games)</small></div>
-<div class=stat><b>{bt_ll:.3f}</b><small>log-loss vs baseline {bt_base:.3f}</small></div>
-</div>
-<p>We score with <b>log-loss</b>, which rewards being confident <em>and</em> right
-and punishes confident-but-wrong, so you can't game it by hedging. The randomness
-we measured on ordinary games was also near-optimal for World Cup games &mdash; so
-we didn't tune the model to its own data.</p>
-<div class=note><b>What this does and doesn't test.</b> The backtest scores the
-match engine &mdash; how a rating gap becomes a result &mdash; using each team's
-<em>reconstructed Elo</em> at the time, with no market data and no ensemble. It
-validates the simulation machinery that carries every number here through the
-bracket, but <em>not</em> the market calibration or the 85/15 blend (Section&nbsp;5):
-those have no historical betting odds to test against.</div></section>
 
 <section><h2>What it can't do (being honest)</h2>
 <ul>
@@ -560,7 +545,7 @@ A model, not a guarantee &mdash; the point is that upsets happen.</footer>
 # substituted value in the final f-string instead.
 SCRIPT = """
 <script>
-let SRC=SRC0, CUR=REC, NSHOW=8;
+let SRC=SRC0, CUR=REC, NSHOW=8, HOST="on";
 function pct(x,d=1){return (100*x).toFixed(d)+"%";}
 function bar(x){let w=Math.max(0.5,100*x);return `<div class="bar"><span style="width:${w.toFixed(1)}%;background:var(--ac)"></span></div>`;}
 const CIRC='<svg class=circ viewBox="0 0 120 56" preserveAspectRatio=none><path d="M98,9 C71,1 31,4 16,17 C4,28 8,46 41,52 C77,58 114,46 110,25 C107,11 86,6 67,8" fill=none stroke="#e23b3b" stroke-width=2.6 stroke-linecap=round/></svg>';
@@ -598,7 +583,7 @@ function renderBracket(s){
 }
 function update(i){
   CUR=i;
-  const s=SNAP[SRC][i], w=WEIGHTS[i];
+  const s=SNAP[HOST][SRC][i], w=WEIGHTS[i];
   const lead=Object.keys(s.teams).reduce((a,b)=>s.teams[b][4]>s.teams[a][4]?b:a);
   document.getElementById("champName").textContent=lead;
   renderOdds(s);renderGroups(s);renderBracket(s);
@@ -622,7 +607,12 @@ const NB=[].slice.call(document.querySelectorAll(".nbtn"));
 NB.forEach(b=>b.addEventListener("click",function(){
   NSHOW=+b.getAttribute("data-n");
   NB.forEach(x=>x.classList.toggle("on",x===b));
-  renderOdds(SNAP[SRC][CUR]);}));
+  renderOdds(SNAP[HOST][SRC][CUR]);}));
+const HB=[].slice.call(document.querySelectorAll(".hbtn"));
+HB.forEach(b=>b.addEventListener("click",function(){
+  HOST=b.getAttribute("data-h");
+  HB.forEach(x=>x.classList.toggle("on",x===b));
+  update(CUR);}));
 update(REC);
 </script>
 """
@@ -647,9 +637,6 @@ def build_page(d):
         base=engine.BASE_GOALS, gamma=engine.ELO_SUPREMACY,
         vig=100 * (market.overround("espn") - 1),
         vig_k=100 * (market.overround("kalshi") - 1),
-        bt_n=d["bt"]["n"], bt_impr=d["bt"]["impr"], bt_acc=100 * d["bt"]["acc"],
-        bt_ll=d["bt"]["ll"], bt_base=d["bt"]["base_ll"],
-        bt_lo=d["bt"]["lo"], bt_hi=d["bt"]["hi"],
         date=datetime.date.today().strftime("%B %-d, %Y"))
 
     datajs = ("<script>"

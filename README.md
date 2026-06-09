@@ -24,6 +24,7 @@ python3 forecast.py             # show the blended ensemble target odds
 python3 market.py               # de-vigged market title odds + the vig
 python3 fit_variance.py         # measure per-match randomness from real results
 python3 backtest.py             # score the model on real World Cups (validation)
+python3 tests.py                # sanity checks (data, engine, sim, markets)
 python3 report.py               # generate index.html for GitHub Pages
 python3 histelo.py              # reconstruct historical Elo (sanity check)
 python3 data.py                 # sanity-check the input data
@@ -145,8 +146,9 @@ To go beyond that you need proprietary data — diminishing returns from here.
 
 - `data.py` — Elo ratings (all 48 from eloratings.net, no estimates), the 12
   groups, host list.
-- `engine.py` — the model's knobs: `HOME_ADVANTAGE_ELO` plus the data-fitted
-  `BASE_GOALS`, `ELO_SUPREMACY`, `DRAW_RHO` (re-fit via `fit_variance.py`).
+- `engine.py` — the model's knobs, all data-fit: `HOME_ADVANTAGE_ELO` (96, fit
+  by `fit_variance.home_advantage_fit`), `BASE_GOALS`, `ELO_SUPREMACY`,
+  `DRAW_RHO` (re-fit via `fit_variance.py`).
 
 ## Known simplifications
 
@@ -162,7 +164,8 @@ To go beyond that you need proprietary data — diminishing returns from here.
 
 - Groups: 2026 World Cup final draw (5 Dec 2025).
 - Elo: eloratings.net (all 48 teams, the canonical World Football Elo).
-- Markets (`market.py`): two selectable sources — **ESPN** sportsbook futures
-  (~18% vig) and the **Kalshi** exchange (KXMENWORLDCUP-26, ~5% vig, via its API).
+- Markets (`market.py`): selectable sources — **ESPN** sportsbook futures
+  (~18% vig), the **Kalshi** exchange (KXMENWORLDCUP-26, ~5% vig, via its API),
+  and their **Average**.
   The report has a selector to calibrate to either; both are de-vigged the same way.
 - Bracket structure: official FIFA match schedule.

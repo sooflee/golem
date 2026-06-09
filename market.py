@@ -66,21 +66,23 @@ MARKET_ODDS_DECIMAL = {
 # peer-to-peer exchange, so the "vig" is just the small bid/ask overround ~5%,
 # vs a sportsbook's ~18%). Stored raw; de-vigged the same way (normalize to 1).
 KALSHI_PROBS = {
-    "Spain": 0.1645, "France": 0.1625, "England": 0.1015, "Portugal": 0.1005,
-    "Argentina": 0.0885, "Brazil": 0.0785, "Germany": 0.0595, "Netherlands": 0.0475,
-    "Norway": 0.0235, "Belgium": 0.0225, "Colombia": 0.0185, "Japan": 0.0165,
-    "United States": 0.016, "Mexico": 0.0155, "Morocco": 0.0155, "Turkiye": 0.0115,
-    "Switzerland": 0.0105, "Uruguay": 0.0095, "Croatia": 0.0095, "Ecuador": 0.0085,
-    "Senegal": 0.0075, "Iraq": 0.005, "DR Congo": 0.005, "Bosnia and Herzegovina": 0.005,
-    "Czechia": 0.005, "Sweden": 0.0045, "Austria": 0.0045, "Ivory Coast": 0.0035,
-    "Canada": 0.0035, "Egypt": 0.0025, "Scotland": 0.0025, "Paraguay": 0.0025,
-    "South Korea": 0.0025, "Haiti": 0.0015, "Algeria": 0.0015, "Iran": 0.0015,
-    "Ghana": 0.0015, "Australia": 0.0015, "Panama": 0.0005, "Curacao": 0.0005,
-    "Qatar": 0.0005, "South Africa": 0.0005, "Cape Verde": 0.0005, "Jordan": 0.0005,
-    "Uzbekistan": 0.0005, "New Zealand": 0.0005, "Tunisia": 0.0005, "Saudi Arabia": 0.0005,
+    "Spain": 0.1645, "France": 0.1625, "Portugal": 0.1045, "England": 0.1015,
+    "Argentina": 0.0875, "Brazil": 0.0795, "Germany": 0.0595, "Netherlands": 0.0465,
+    "Norway": 0.0245, "Belgium": 0.0225, "Colombia": 0.0195, "Japan": 0.0185, "Mexico": 0.0165,
+    "Morocco": 0.016, "United States": 0.0155, "Turkiye": 0.0115, "Switzerland": 0.0105,
+    "Uruguay": 0.0095, "Croatia": 0.0095, "Ecuador": 0.0085, "Senegal": 0.0075, "Iraq": 0.005,
+    "DR Congo": 0.005, "Bosnia and Herzegovina": 0.005, "Czechia": 0.005, "Sweden": 0.0045,
+    "Austria": 0.0045, "Ivory Coast": 0.0035, "Canada": 0.0035, "Egypt": 0.0025,
+    "Scotland": 0.0025, "Paraguay": 0.0025, "South Korea": 0.0025, "Haiti": 0.0015,
+    "Algeria": 0.0015, "Iran": 0.0015, "Ghana": 0.0015, "Australia": 0.0015, "Panama": 0.0005,
+    "Curacao": 0.0005, "Qatar": 0.0005, "South Africa": 0.0005, "Cape Verde": 0.0005,
+    "Jordan": 0.0005, "Uzbekistan": 0.0005, "New Zealand": 0.0005, "Tunisia": 0.0005,
+    "Saudi Arabia": 0.0005,
 }
 
-# Human labels for the report's market selector.
+# Human labels for the report's market selector. ("avg" — averaging the two
+# sources — is supported by implied_probabilities but kept out of the selector
+# to halve the render; add it back here to expose it.)
 SOURCES = {"kalshi": "Kalshi (exchange)", "espn": "ESPN (sportsbooks)"}
 
 
@@ -93,13 +95,23 @@ def _raw(source):
 def implied_probabilities(bias_k=1.0, source="espn"):
     """De-vigged market title probabilities (sum to 1.0) for the chosen source.
 
+    source="avg" averages the two markets' de-vigged probabilities (a
+    "market of markets" that cancels each one's idiosyncrasies).
+
     bias_k applies a favorite-longshot correction: markets underprice strong
     favorites and overprice longshots. Raising de-vigged probs to a power k>1 and
     renormalizing nudges favorites up / longshots down. k=1.0 is the raw de-vigged
     market; ~1.05-1.10 is a typical correction."""
-    raw = _raw(source)
-    total = sum(raw.values())
-    probs = {t: p / total for t, p in raw.items()}
+    if source == "avg":
+        e = implied_probabilities(1.0, "espn")
+        k = implied_probabilities(1.0, "kalshi")
+        probs = {t: (e[t] + k.get(t, 0.0)) / 2 for t in e}
+        s = sum(probs.values())
+        probs = {t: p / s for t, p in probs.items()}
+    else:
+        raw = _raw(source)
+        total = sum(raw.values())
+        probs = {t: p / total for t, p in raw.items()}
     if bias_k != 1.0:
         adj = {t: p ** bias_k for t, p in probs.items()}
         s = sum(adj.values())
@@ -109,6 +121,8 @@ def implied_probabilities(bias_k=1.0, source="espn"):
 
 def overround(source="espn"):
     """The market margin: how far raw implied probs sum above 1.0."""
+    if source == "avg":
+        return (overround("espn") + overround("kalshi")) / 2
     return sum(_raw(source).values())
 
 

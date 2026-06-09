@@ -130,6 +130,33 @@ def _wdl(lam_h, lam_a, rho=0.0):
     return win / z, draw / z, loss / z
 
 
+def home_advantage_fit(gamma, base, rho):
+    """Estimate the home-field advantage in Elo points by maximum likelihood.
+
+    We rebuild venue-agnostic ratings (home_adv=0) so the home edge isn't already
+    baked into them, then on non-neutral matches find the Elo bump H that, added
+    to the home side, best predicts the actual scorelines. Returns (H, n_matches).
+    This H is what host nations get in the 2026 sim (engine.HOME_ADVANTAGE_ELO)."""
+    rows = []
+    for r in histelo.replay(home_adv=0):
+        if r["settled"] and not r["neutral"] and int(r["date"][:4]) >= MIN_YEAR:
+            rows.append((r["diff"], r["ga"], r["gb"]))
+
+    def loglik(h):
+        s = 0.0
+        for diff, x, y in rows:
+            we = 1.0 / (1.0 + 10 ** (-(diff + h) / 400.0))
+            wm = we - 0.5
+            la, lb = base * math.exp(gamma * wm), base * math.exp(-gamma * wm)
+            s += -la + x * math.log(la) - _LOGFACT[min(x, _MAXG)]
+            s += -lb + y * math.log(lb) - _LOGFACT[min(y, _MAXG)]
+        return s
+
+    best = max(range(0, 161, 5), key=loglik)
+    best = max(range(max(0, best - 5), best + 6), key=loglik)
+    return best, len(rows)
+
+
 def fit_rho(gamma, base, data, target_draw):
     """Find the DC rho that makes the model's overall draw rate match reality."""
     we_minus = data[0]

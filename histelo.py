@@ -53,7 +53,7 @@ def _expected(dr):
     return 1.0 / (1.0 + 10 ** (-dr / 400.0))
 
 
-def replay(min_history=10):
+def replay(min_history=10, home_adv=HOME_ADV):
     """Replay every match in chronological order, updating Elo as we go. Yields
     one record per match *before* that match updates the ratings:
 
@@ -62,7 +62,9 @@ def replay(min_history=10):
     where `diff` is the home side's adjusted Elo minus the away side's (exactly
     the rating gap our match model is given), and `settled` is True once both
     teams have played >= min_history prior matches (ratings stabilized).
-    """
+
+    home_adv is the Elo bump given to the (non-neutral) home team. Pass 0 to get
+    venue-agnostic ratings/diffs (used to *estimate* home advantage itself)."""
     ratings = {}
     played = {}  # team -> count of prior matches
 
@@ -77,7 +79,7 @@ def replay(min_history=10):
 
             rh = ratings.get(home, INIT_RATING)
             ra = ratings.get(away, INIT_RATING)
-            dr = (rh + (0.0 if neutral else HOME_ADV)) - ra
+            dr = (rh + (0.0 if neutral else home_adv)) - ra
 
             yield {"date": row["date"], "tournament": row["tournament"],
                    "neutral": neutral, "home": home, "away": away,
