@@ -137,7 +137,24 @@ color:var(--mut);cursor:pointer;text-align:center;line-height:1}
 .ticks .tk.on::before{background:var(--ink);height:8px}
 footer{margin-top:54px;padding-top:22px;border-top:1px solid var(--line);
 font-family:var(--sans);color:var(--mut);font-size:13px;line-height:1.6}
-@media(max-width:640px){body{font-size:18px}.stats{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){
+body{font-size:16px}
+.wrap{padding:16px 14px 50px}
+.stats{grid-template-columns:1fr 1fr}
+/* odds table: drop the mid round columns, keep Team / Champion / Market */
+.odds{font-size:13px}
+.odds th,.odds td{padding:8px 5px}
+.odds th:nth-child(4),.odds td:nth-child(4),.odds th:nth-child(5),.odds td:nth-child(5),
+.odds th:nth-child(6),.odds td:nth-child(6),.odds th:nth-child(7),.odds td:nth-child(7){display:none}
+.odds th:nth-child(1),.odds td:nth-child(1){width:9%}
+.odds th:nth-child(2),.odds td:nth-child(2){width:40%}
+.odds th:nth-child(3),.odds td:nth-child(3){width:28%}
+.odds th:nth-child(8),.odds td:nth-child(8){width:23%}
+/* slider ticks: keep the marks, label only the two ends to avoid overlap */
+.ticks .tk{font-size:0}
+.ticks .tk:first-child,.ticks .tk:last-child{font-size:10px}
+.bcol{min-width:130px}
+}
 </style></head><body><div class=wrap>
 <header>
 <div class=kick>Forecast &middot; World Cup 2026</div>
