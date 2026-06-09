@@ -36,6 +36,13 @@ import tournament
 WEIGHTS = [0.0, 0.25, 0.50, 0.70, 0.80, 0.85, 0.90, 1.0]
 REC_IDX = 5  # 0.85 (85% market / 15% model) is the recommended blend
 DEFAULT_SOURCE = "kalshi"  # market shown on first load
+
+# Host-advantage states the report can toggle between (Elo bump for hosts).
+# Ratings are calibrated at the default (60); the others re-simulate those same
+# ratings with the bump changed, so "none" / "full" are counterfactuals.
+HOST_STATES = [("none", 0.0), ("wc", 60.0), ("full", 96.0)]
+HOST_LABELS = {"none": "None", "wc": "WC (60)", "full": "Full (96)"}
+DEFAULT_HOST = "wc"
 ROUND_KEYS = ("R16", "QF", "SF", "Final", "Champion")
 
 # Hand-drawn-style red ellipse drawn around the favorite's championship odds.
@@ -60,32 +67,32 @@ def _snap(elo, sims):
 
 
 def gather(sims):
-    # snaps[host_state][source] = [per-weight snapshot]. Host "off" re-simulates
-    # the same calibrated ratings with the home bump removed (engine global), so
-    # it shows how much of the hosts' odds is home advantage.
-    host_on = engine.HOME_ADVANTAGE_ELO
-    snaps = {"on": {}, "off": {}}
+    # snaps[host_state][source] = [per-weight snapshot]. Ratings are calibrated
+    # once (at the default host bump); each host state re-simulates them with the
+    # bump set to none/60/96, so none & full are counterfactuals around the
+    # market-calibrated default.
+    cal_ha = engine.HOME_ADVANTAGE_ELO  # calibrate at the default (60)
+    snaps = {k: {} for k, _ in HOST_STATES}
     mkt = {}
     rec = None
     for src in market.SOURCES:
         mkt[src] = market.implied_probabilities(source=src)
-        snaps["on"][src] = []
-        snaps["off"][src] = []
+        for k, _ in HOST_STATES:
+            snaps[k][src] = []
         for i, w in enumerate(WEIGHTS):
             print(f"  {src} {int(w*100)}% ...", flush=True)
-            engine.HOME_ADVANTAGE_ELO = host_on  # calibrate with hosts boosted
+            engine.HOME_ADVANTAGE_ELO = cal_ha
             elo = calibrate.load_or_calibrate(market_weight=w, bias_k=1.05,
                                               source=src, verbose=False)
-            engine.HOME_ADVANTAGE_ELO = host_on
-            son, rows, by_team, chalk, n = _snap(elo, sims)
-            snaps["on"][src].append(son)
-            engine.HOME_ADVANTAGE_ELO = 0.0  # re-sim with home edge removed
-            soff = _snap(elo, sims)[0]
-            snaps["off"][src].append(soff)
-            if src == DEFAULT_SOURCE and i == REC_IDX:
-                rec = {"rows": rows, "by_team": by_team, "chalk": chalk,
-                       "elo": elo, "n": n}
-    engine.HOME_ADVANTAGE_ELO = host_on  # restore
+            for k, hv in HOST_STATES:
+                engine.HOME_ADVANTAGE_ELO = hv
+                snap, rows, by_team, chalk, n = _snap(elo, sims)
+                snaps[k][src].append(snap)
+                if (k == DEFAULT_HOST and src == DEFAULT_SOURCE
+                        and i == REC_IDX):
+                    rec = {"rows": rows, "by_team": by_team, "chalk": chalk,
+                           "elo": elo, "n": n}
+    engine.HOME_ADVANTAGE_ELO = cal_ha  # restore
     return {"snaps": snaps, "rec": rec, "mkt": mkt, "sims": rec["n"]}
 
 
@@ -407,16 +414,16 @@ BODY = """
 <header>
 <div class=kick>Forecast &middot; World Cup 2026</div>
 <h1>Who will win the 2026 World Cup?</h1>
-<p class=dek>A Monte Carlo model &mdash; anchored to the betting market and tuned to
-25 years of match results &mdash; plays the tournament {sims:,} times to estimate
-every team's odds. Its current favorite: <b>&#127942; <span id=champName>{champ}</span></b>.</p>
-<div class=byline>By a simulation model &middot; {date} &middot;
-<a href="#how">How it works &darr;</a></div>
+<p class=dek>Nobody really knows &mdash; it only happens once, and luck gets a big
+vote. So I had a computer play the whole thing {sims:,} times, leaning on the
+betting market and 25 years of results, just to see who keeps walking away with
+the trophy. Right now, that's <b>&#127942; <span id=champName>{champ}</span></b>.</p>
+<div class=byline>Updated {date} &middot; <a href="#how">how it works &darr;</a></div>
 </header>
 
 <div class=tuner>
 <div class=mkts><span class=mlbl>Calibrate to market:</span>{mktbtns}</div>
-<div class=mkts><span class=mlbl>Host advantage (USA/MEX/CAN):</span><button class="hbtn on" data-h=on>On</button><button class=hbtn data-h=off>Off</button></div>
+<div class=mkts><span class=mlbl>Host advantage (USA/MEX/CAN):</span>{hostbtns}</div>
 <div class=row><div class=wlab id=wlab></div><div class=wtag id=wtag></div></div>
 <input type=range id=wslider min=0 max=100 step=1 value="{recpct}">
 <div class=ticks>{ticks}</div>
@@ -456,8 +463,9 @@ bookmakers.</p></section>
 <div class=divider id=how><span>The method</span><h2>How it works</h2></div>
 
 <section><h2><span class=n>0</span>The big idea: play the tournament 100,000 times</h2>
-<p>You can't know what <em>will</em> happen at one World Cup &mdash; it's played
-once, and luck matters. So we ask an answerable question:
+<p>Here's the problem: the World Cup happens exactly once, and on any given day the
+better team loses all the time. You can't out-predict that. So I stopped trying to,
+and asked a question you actually <em>can</em> answer:
 <b>if this exact tournament were replayed thousands of times, how often would each
 team win?</b></p>
 <p>That's a <b>Monte Carlo simulation</b>. Simulate one match realistically &mdash;
@@ -480,10 +488,11 @@ Elo on different scales. This formula always maps a <em>gap</em> to the same
 probability, so the model works with any ratings.</div></section>
 
 <section><h2><span class=n>2</span>Simulating one match</h2>
-<p>We simulate the <b>score</b>, not just win/lose &mdash; the group stage ranks by
-goal difference. We turn each side's win-expectancy into expected goals, then draw
-a random scoreline from a <b>Poisson distribution</b> (the standard model for
-counting rare scattered events &mdash; goals, raindrops, typos per page):</p>
+<p>I simulate the actual <b>scoreline</b>, not just who won &mdash; the group stage
+comes down to goal difference, so goals matter. Each side's win-expectancy becomes
+an expected number of goals, and the score is a random draw from a <b>Poisson
+distribution</b> (the go-to model for counting rare, scattered events &mdash;
+goals, raindrops, typos on a page):</p>
 <div class=formula>goals_A ~ Poisson( {base} &times; e^( {gamma}&times;(win_exp&minus;0.5)) )
 goals_B ~ Poisson( {base} &times; e^(&minus;{gamma}&times;(win_exp&minus;0.5)) )</div>
 <p>Two even teams average {base} each; a favorite's average rises. The
@@ -495,9 +504,9 @@ goals_B ~ Poisson( {base} &times; e^(&minus;{gamma}&times;(win_exp&minus;0.5)) )
 <p>The two numbers above ({base} and {gamma}) control <b>how much a rating edge
 really decides a match versus how much is luck</b>. Guess wrong and the model gets
 over-confident (a bank once put one team at 26% to win it all) or under-confident.
-So we <b>measure them from {fit_n:,} real internationals since {fit_year}</b>
-(recent football only), finding the settings that make the results that
-<em>actually happened</em> most likely (<b>maximum likelihood</b>). The verdict on
+So I didn't eyeball it &mdash; I <b>measured it against {fit_n:,} real
+internationals since {fit_year}</b>, letting the data pick the settings that make
+what <em>actually happened</em> most likely (<b>maximum likelihood</b>). The verdict on
 football's built-in randomness:</p>
 {rand}
 <div class=note><b>This is why upsets are common.</b> Even a clear favorite loses
@@ -545,7 +554,7 @@ A model, not a guarantee &mdash; the point is that upsets happen.</footer>
 # substituted value in the final f-string instead.
 SCRIPT = """
 <script>
-let SRC=SRC0, CUR=REC, NSHOW=8, HOST="on";
+let SRC=SRC0, CUR=REC, NSHOW=8, HOST="wc";
 function pct(x,d=1){return (100*x).toFixed(d)+"%";}
 function bar(x){let w=Math.max(0.5,100*x);return `<div class="bar"><span style="width:${w.toFixed(1)}%;background:var(--ac)"></span></div>`;}
 const CIRC='<svg class=circ viewBox="0 0 120 56" preserveAspectRatio=none><path d="M98,9 C71,1 31,4 16,17 C4,28 8,46 41,52 C77,58 114,46 110,25 C107,11 86,6 67,8" fill=none stroke="#e23b3b" stroke-width=2.6 stroke-linecap=round/></svg>';
@@ -626,10 +635,14 @@ def build_page(d):
         f'<button class="mbtn{" on" if s == DEFAULT_SOURCE else ""}" '
         f'data-src="{s}">{esc(lbl)}</button>'
         for s, lbl in market.SOURCES.items())
+    hostbtns = "".join(
+        f'<button class="hbtn{" on" if k == DEFAULT_HOST else ""}" '
+        f'data-h="{k}">{HOST_LABELS[k]}</button>'
+        for k, _ in HOST_STATES)
     body = BODY.format(
         sims=d["sims"], champ=esc(rec["rows"][0]["team"]),
         recpct=int(round(WEIGHTS[REC_IDX] * 100)), ticks=ticks_html(),
-        mktbtns=mktbtns, fit_n=fit_n, fit_year=fv.MIN_YEAR,
+        mktbtns=mktbtns, hostbtns=hostbtns, fit_n=fit_n, fit_year=fv.MIN_YEAR,
         odds=odds_table(rec["rows"], d["mkt"][DEFAULT_SOURCE], 8),
         groups=groups_grid(rec["by_team"]),
         bracket=bracket(rec["chalk"], rec["by_team"]),

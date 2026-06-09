@@ -18,11 +18,11 @@ Re-fit anytime with `python3 fit_variance.py` and update the three constants.
 import math
 
 # Rating bump for a host nation (USA / Canada / Mexico) in any match it plays.
-# Fit from data (fit_variance.home_advantage_fit): 96 Elo maximizes the
-# likelihood of 17,896 non-neutral internationals since 2000 — in line with
-# eloratings.net's house home-advantage of 100 (consistent, since our ratings
-# come from there). Market calibration absorbs most of it for the title odds.
-HOME_ADVANTAGE_ELO = 96.0
+# The full home-field edge fit from data is ~96 Elo (fit_variance.home_advantage_fit,
+# 17,896 non-neutral internationals) — but that's qualifier-style home advantage;
+# a World Cup host's edge is milder (neutral-ish crowds, opponents also far from
+# home), so the default is a reduced 60. The report lets you toggle none/60/96.
+HOME_ADVANTAGE_ELO = 60.0
 
 # --- fitted by fit_variance.py on 24,787 internationals (2000+, recent only) ---
 BASE_GOALS = 1.178       # expected goals per team in an evenly matched game
