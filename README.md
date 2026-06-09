@@ -162,4 +162,7 @@ To go beyond that you need proprietary data — diminishing returns from here.
 
 - Groups: 2026 World Cup final draw (5 Dec 2025).
 - Elo: eloratings.net (all 48 teams, the canonical World Football Elo).
+- Markets (`market.py`): two selectable sources — **ESPN** sportsbook futures
+  (~18% vig) and the **Kalshi** exchange (KXMENWORLDCUP-26, ~5% vig, via its API).
+  The report has a selector to calibrate to either; both are de-vigged the same way.
 - Bracket structure: official FIFA match schedule.

@@ -35,6 +35,7 @@ import tournament
 # slider's end labels). Value is the weight on the market.
 WEIGHTS = [0.0, 0.25, 0.50, 0.70, 0.80, 0.85, 0.90, 1.0]
 REC_IDX = 5  # 0.85 (85% market / 15% model) is the recommended blend
+DEFAULT_SOURCE = "kalshi"  # market shown on first load
 ROUND_KEYS = ("R16", "QF", "SF", "Final", "Champion")
 
 # Hand-drawn-style red ellipse drawn around the favorite's championship odds.
@@ -47,26 +48,29 @@ CIRCLE_SVG = ('<svg class=circ viewBox="0 0 120 56" preserveAspectRatio=none>'
 # ---------------------------------------------------------------- compute ----
 
 def gather(sims):
-    mkt = market.implied_probabilities()
-    snaps = []
-    rec = None
-    for i, w in enumerate(WEIGHTS):
-        print(f"  weight {int(w*100)}% market ...", flush=True)
-        elo = calibrate.load_or_calibrate(market_weight=w, bias_k=1.05,
-                                          verbose=False)
-        counts, n = montecarlo.run(sims, seed=0, elo=elo)
-        rows = montecarlo.probabilities(counts, n)
-        by_team = {r["team"]: r for r in rows}
-        chalk = tournament.simulate(elo=elo, deterministic=True)
-        snaps.append({
-            "champ": chalk["champion"],
-            "won": {str(m): chalk["won"][m] for m in chalk["won"]},
-            "teams": {t: [round(by_team[t][k], 4) for k in ROUND_KEYS]
-                      for t in by_team},
-        })
-        if i == REC_IDX:
-            rec = {"rows": rows, "by_team": by_team, "chalk": chalk,
-                   "elo": elo, "n": n}
+    snaps = {}   # source -> [per-weight snapshot]
+    mkt = {}     # source -> de-vigged implied probs
+    rec = None   # static initial render uses the default source at REC_IDX
+    for src in market.SOURCES:
+        mkt[src] = market.implied_probabilities(source=src)
+        snaps[src] = []
+        for i, w in enumerate(WEIGHTS):
+            print(f"  {src} {int(w*100)}% market ...", flush=True)
+            elo = calibrate.load_or_calibrate(market_weight=w, bias_k=1.05,
+                                              source=src, verbose=False)
+            counts, n = montecarlo.run(sims, seed=0, elo=elo)
+            rows = montecarlo.probabilities(counts, n)
+            by_team = {r["team"]: r for r in rows}
+            chalk = tournament.simulate(elo=elo, deterministic=True)
+            snaps[src].append({
+                "champ": chalk["champion"],
+                "won": {str(m): chalk["won"][m] for m in chalk["won"]},
+                "teams": {t: [round(by_team[t][k], 4) for k in ROUND_KEYS]
+                          for t in by_team},
+            })
+            if src == DEFAULT_SOURCE and i == REC_IDX:
+                rec = {"rows": rows, "by_team": by_team, "chalk": chalk,
+                       "elo": elo, "n": n}
 
     bt_matches = backtest.wc_matches()
     g, b, rho = engine.ELO_SUPREMACY, engine.BASE_GOALS, engine.DRAW_RHO
@@ -235,6 +239,7 @@ STYLE = """
 --serif:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif;
 --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,system-ui,sans-serif}
 *{box-sizing:border-box}
+html{scrollbar-gutter:stable}
 body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 var(--serif);
 -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 .wrap{max-width:900px;margin:0 auto;padding:20px 22px 64px}
@@ -285,8 +290,15 @@ th,td{padding:9px 8px;text-align:right;border-bottom:1px solid var(--line)}
 th{color:var(--mut);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.04em;
 border-bottom:1.5px solid var(--ink)}
 .l{text-align:left}.rank{color:var(--mut)}.mkt{color:var(--mut)}
+/* fixed layout so columns don't re-measure (and shift) when the data changes */
+.odds{table-layout:fixed}
+.odds th:nth-child(1),.odds td:nth-child(1){width:6%}
+.odds th:nth-child(2),.odds td:nth-child(2){width:26%}
+.odds td:nth-child(2){white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.odds th:nth-child(3),.odds td:nth-child(3){width:17%}
+.odds th:nth-child(8),.odds td:nth-child(8){width:9%}
 .odds tr:hover td{background:var(--tile)}
-.prob{position:relative;min-width:120px}
+.prob{position:relative}
 .prob span:last-child{position:relative}
 .bar{position:absolute;inset:0;display:flex;align-items:center;padding:0 8px}
 .bar span{height:62%;border-radius:2px;display:block;opacity:.18;transition:width .3s}
@@ -335,6 +347,14 @@ font-size:13px;text-transform:uppercase;letter-spacing:.04em}
 .tuner .wtag{font-family:var(--sans);font-size:11px;font-weight:700;text-transform:uppercase;
 letter-spacing:.06em;color:#fff;background:var(--ac);padding:3px 10px;border-radius:20px}
 .tuner .wtag:empty{display:none}
+.mkts{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px;
+padding-bottom:14px;border-bottom:1px solid var(--line)}
+.mlbl{font-family:var(--sans);font-size:12px;font-weight:700;text-transform:uppercase;
+letter-spacing:.06em;color:var(--mut)}
+.mbtn{font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;
+background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:20px;padding:5px 14px}
+.mbtn:hover{border-color:var(--ac)}
+.mbtn.on{background:var(--ac);color:#fff;border-color:var(--ac)}
 input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:5px;border-radius:5px;
 background:linear-gradient(90deg,#cdc6b8,var(--ac));margin:16px 0 6px;cursor:pointer}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;
@@ -370,6 +390,7 @@ every team's odds. Its current favorite: <b>&#127942; <span id=champName>{champ}
 </header>
 
 <div class=tuner>
+<div class=mkts><span class=mlbl>Calibrate to market:</span>{mktbtns}</div>
 <div class=row><div class=wlab id=wlab></div><div class=wtag id=wtag></div></div>
 <input type=range id=wslider min=0 max=100 step=1 value="{recpct}">
 <div class=ticks>{ticks}</div>
@@ -462,11 +483,13 @@ the slider's pure-model end can be high yet still honest.)</div></section>
 
 <section><h2><span class=n>5</span>Trusting the betting market (calibration &amp; the slider)</h2>
 <p>The <b>betting market</b> is the best-calibrated forecast there is &mdash;
-millions of people with real money, reacting to injuries and news. Bookmaker odds
-sum to over 100%; that overage (~{vig:.0f}% here) is their margin, the "vig," which
-we strip out. Then we <b>calibrate</b>: nudge each team's rating until <em>our</em>
-simulated title odds match that blended target (market + our model, at the
-slider's mix).</p>
+millions of people with real money, reacting to injuries and news. You can
+calibrate to either of two markets (the buttons above the slider): a
+<b>sportsbook</b> futures board (ESPN) or the <b>Kalshi exchange</b>. Their prices
+sum to over 100% &mdash; that overage (the "vig", ~{vig:.0f}% for the sportsbook
+but only ~{vig_k:.0f}% on the peer-to-peer exchange) we strip out. Then we
+<b>calibrate</b>: nudge each team's rating until <em>our</em> simulated title odds
+match that blended target (market + our model, at the slider's mix).</p>
 <p>The slider at the top blends the two: <b>0% = our pure Elo model</b> (free to
 disagree with the market, Goldman-style), <b>100% = the pure market</b>. The
 recommended default is <b>85% market / 15% model</b> &mdash; lean on the market
@@ -514,8 +537,7 @@ A model, not a guarantee &mdash; the point is that upsets happen.</footer>
 # substituted value in the final f-string instead.
 SCRIPT = """
 <script>
-const RKEY=["r16","qf","sf","f","ch"];
-const fav=(s)=>s.champ;
+let SRC=SRC0, CUR=REC;
 function pct(x,d=1){return (100*x).toFixed(d)+"%";}
 function bar(x){let w=Math.max(0.5,100*x);return `<div class="bar"><span style="width:${w.toFixed(1)}%;background:var(--ac)"></span></div>`;}
 const CIRC='<svg class=circ viewBox="0 0 120 56" preserveAspectRatio=none><path d="M98,9 C71,1 31,4 16,17 C4,28 8,46 41,52 C77,58 114,46 110,25 C107,11 86,6 67,8" fill=none stroke="#e23b3b" stroke-width=2.6 stroke-linecap=round/></svg>';
@@ -524,7 +546,7 @@ function renderOdds(s){
   ts.sort((a,b)=>b.v[4]-a.v[4]||b.v[3]-a.v[3]);
   let h="<table class=odds><tr><th>#</th><th class=l>Team</th><th>Champion</th><th>Final</th><th>Semi</th><th>Quarter</th><th>R16</th><th>Market</th></tr>";
   ts.slice(0,16).forEach((r,i)=>{
-    const m=MKT[r.t]; const mt=(m!=null)?pct(m):"&ndash;";
+    const m=MKT[SRC][r.t]; const mt=(m!=null)?pct(m):"&ndash;";
     const ch=(i===0)?`<td class='prob circled'>${bar(r.v[4])}<span class=cw>${CIRC}${pct(r.v[4])}</span></td>`:`<td class=prob>${bar(r.v[4])}<span>${pct(r.v[4])}</span></td>`;
     h+=`<tr><td class=rank>${i+1}</td><td class=l><b>${r.t}</b></td>${ch}<td>${pct(r.v[3])}</td><td>${pct(r.v[2])}</td><td>${pct(r.v[1])}</td><td>${pct(r.v[0])}</td><td class=mkt>${mt}</td></tr>`;
   });
@@ -552,7 +574,8 @@ function renderBracket(s){
   document.getElementById("bracketWrap").innerHTML=`<div class=bracket>${h}</div>`;
 }
 function update(i){
-  const s=SNAP[i], w=WEIGHTS[i];
+  CUR=i;
+  const s=SNAP[SRC][i], w=WEIGHTS[i];
   document.getElementById("champName").textContent=s.champ;
   renderOdds(s);renderGroups(s);renderBracket(s);
   document.getElementById("wlab").innerHTML=`Market <b>${w}%</b> &nbsp;/&nbsp; Our model <b>${100-w}%</b>`;
@@ -566,6 +589,11 @@ const TKS=[].slice.call(document.querySelectorAll(".ticks .tk"));
 const SL=document.getElementById("wslider");
 TKS.forEach(t=>t.addEventListener("click",()=>update(+t.getAttribute("data-i"))));
 SL.addEventListener("input",()=>update(snapIdx(+SL.value)));
+const MB=[].slice.call(document.querySelectorAll(".mbtn"));
+MB.forEach(b=>b.addEventListener("click",function(){
+  SRC=b.getAttribute("data-src");
+  MB.forEach(x=>x.classList.toggle("on",x===b));
+  update(CUR);}));
 update(REC);
 </script>
 """
@@ -575,16 +603,21 @@ def build_page(d):
     rec = d["rec"]
     fit_n = sum(1 for _ in histelo.reconstruct(min_year=fv.MIN_YEAR))
     worked = worked_example(rec["elo"]).format(sims=f"{d['sims']:,}")
+    mktbtns = "".join(
+        f'<button class="mbtn{" on" if s == DEFAULT_SOURCE else ""}" '
+        f'data-src="{s}">{esc(lbl)}</button>'
+        for s, lbl in market.SOURCES.items())
     body = BODY.format(
         sims=d["sims"], champ=esc(rec["chalk"]["champion"]),
         recpct=int(round(WEIGHTS[REC_IDX] * 100)), ticks=ticks_html(),
-        fit_n=fit_n, fit_year=fv.MIN_YEAR,
-        odds=odds_table(rec["rows"], d["mkt"], 16),
+        mktbtns=mktbtns, fit_n=fit_n, fit_year=fv.MIN_YEAR,
+        odds=odds_table(rec["rows"], d["mkt"][DEFAULT_SOURCE], 16),
         groups=groups_grid(rec["by_team"]),
         bracket=bracket(rec["chalk"], rec["by_team"]),
         worked=worked, rand=randomness_table(),
         base=engine.BASE_GOALS, gamma=engine.ELO_SUPREMACY,
-        vig=100 * (market.overround() - 1),
+        vig=100 * (market.overround("espn") - 1),
+        vig_k=100 * (market.overround("kalshi") - 1),
         bt_n=d["bt"]["n"], bt_impr=d["bt"]["impr"], bt_acc=100 * d["bt"]["acc"],
         bt_ll=d["bt"]["ll"], bt_base=d["bt"]["base_ll"],
         bt_lo=d["bt"]["lo"], bt_hi=d["bt"]["hi"],
@@ -593,7 +626,7 @@ def build_page(d):
     datajs = ("<script>"
               f"const SNAP={json.dumps(d['snaps'])};"
               f"const WEIGHTS={json.dumps([int(w*100) for w in WEIGHTS])};"
-              f"const REC={REC_IDX};"
+              f"const REC={REC_IDX};const SRC0={json.dumps(DEFAULT_SOURCE)};"
               f"const MKT={json.dumps(d['mkt'])};"
               f"const GROUPS={json.dumps(data.GROUPS)};"
               f"const R16={json.dumps(tournament.R16)};"

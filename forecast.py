@@ -28,9 +28,10 @@ def elo_title_probs(sims=20000, seed=12345):
     return {t: counts[t][5] / n for t in counts}
 
 
-def build_target(market_weight=0.85, bias_k=1.05, elo_probs=None, verbose=False):
+def build_target(market_weight=0.85, bias_k=1.05, source="espn", elo_probs=None,
+                 verbose=False):
     """Return the de-vigged, bias-corrected, market+Elo blended target probs."""
-    m = market.implied_probabilities(bias_k=bias_k)
+    m = market.implied_probabilities(bias_k=bias_k, source=source)
     if market_weight >= 0.999:
         return m
     if elo_probs is None:

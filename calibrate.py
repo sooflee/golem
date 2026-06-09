@@ -71,15 +71,15 @@ def calibrate(target=None, iterations=24, sims=25000, lr=60.0, max_step=60.0,
     return avg
 
 
-def load_or_calibrate(market_weight=0.85, bias_k=1.05, force=False, verbose=True,
-                      **kw):
+def load_or_calibrate(market_weight=0.85, bias_k=1.05, source="espn", force=False,
+                      verbose=True, **kw):
     """Load cached calibrated ratings for this config, or compute and cache."""
-    tag = f"w{market_weight:.2f}_k{bias_k:.2f}"
+    tag = f"{source}_w{market_weight:.2f}_k{bias_k:.2f}"
     path = os.path.join(_DIR, f"calibrated_elo_{tag}.json")
     if not force and os.path.exists(path):
         with open(path) as f:
             return json.load(f)
-    target = forecast.build_target(market_weight, bias_k, verbose=verbose)
+    target = forecast.build_target(market_weight, bias_k, source, verbose=verbose)
     ratings = calibrate(target=target, verbose=verbose, **kw)
     with open(path, "w") as f:
         json.dump(ratings, f, indent=2, sort_keys=True)
