@@ -355,6 +355,9 @@ letter-spacing:.06em;color:var(--mut)}
 background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:20px;padding:5px 14px}
 .mbtn:hover{border-color:var(--ac)}
 .mbtn.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.showall{font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;background:#fff;
+color:var(--ac);border:1px solid var(--line);border-radius:20px;padding:6px 16px;margin-top:10px}
+.showall:hover{border-color:var(--ac)}
 input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:5px;border-radius:5px;
 background:linear-gradient(90deg,#cdc6b8,var(--ac));margin:16px 0 6px;cursor:pointer}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;
@@ -425,6 +428,7 @@ this slider, rather than ask you to take one number on faith.</p>
 </div>
 
 <section><h2>Title &amp; deep-run odds</h2><div id=oddsWrap>{odds}</div>
+<button class=showall id=showall>Show all 48 teams &darr;</button>
 <p class=mut>"Market" is the de-vigged bookmaker title odds. Other columns are the
 simulated probability of reaching each round at the current slider setting. The
 <span style="color:#e23b3b;font-weight:700">red circle</span> marks the model's
@@ -554,7 +558,7 @@ A model, not a guarantee &mdash; the point is that upsets happen.</footer>
 # substituted value in the final f-string instead.
 SCRIPT = """
 <script>
-let SRC=SRC0, CUR=REC;
+let SRC=SRC0, CUR=REC, ALL=false;
 function pct(x,d=1){return (100*x).toFixed(d)+"%";}
 function bar(x){let w=Math.max(0.5,100*x);return `<div class="bar"><span style="width:${w.toFixed(1)}%;background:var(--ac)"></span></div>`;}
 const CIRC='<svg class=circ viewBox="0 0 120 56" preserveAspectRatio=none><path d="M98,9 C71,1 31,4 16,17 C4,28 8,46 41,52 C77,58 114,46 110,25 C107,11 86,6 67,8" fill=none stroke="#e23b3b" stroke-width=2.6 stroke-linecap=round/></svg>';
@@ -562,7 +566,7 @@ function renderOdds(s){
   const ts=Object.keys(s.teams).map(t=>({t,v:s.teams[t]}));
   ts.sort((a,b)=>b.v[4]-a.v[4]||b.v[3]-a.v[3]);
   let h="<table class=odds><tr><th>#</th><th class=l>Team</th><th>Champion</th><th>Final</th><th>Semi</th><th>Quarter</th><th>R16</th><th>Market</th></tr>";
-  ts.slice(0,16).forEach((r,i)=>{
+  ts.slice(0, ALL?ts.length:20).forEach((r,i)=>{
     const m=MKT[SRC][r.t]; const mt=(m!=null)?pct(m):"&ndash;";
     const ch=(i===0)?`<td class='prob circled'>${bar(r.v[4])}<span class=cw>${CIRC}${pct(r.v[4])}</span></td>`:`<td class=prob>${bar(r.v[4])}<span>${pct(r.v[4])}</span></td>`;
     h+=`<tr><td class=rank>${i+1}</td><td class=l><b>${r.t}</b></td>${ch}<td>${pct(r.v[3])}</td><td>${pct(r.v[2])}</td><td>${pct(r.v[1])}</td><td>${pct(r.v[0])}</td><td class=mkt>${mt}</td></tr>`;
@@ -612,6 +616,11 @@ MB.forEach(b=>b.addEventListener("click",function(){
   SRC=b.getAttribute("data-src");
   MB.forEach(x=>x.classList.toggle("on",x===b));
   update(CUR);}));
+const SA=document.getElementById("showall");
+SA.addEventListener("click",function(){
+  ALL=!ALL;
+  SA.innerHTML=ALL?"Show top 20 &uarr;":"Show all 48 teams &darr;";
+  renderOdds(SNAP[SRC][CUR]);});
 update(REC);
 </script>
 """
@@ -629,7 +638,7 @@ def build_page(d):
         sims=d["sims"], champ=esc(rec["rows"][0]["team"]),
         recpct=int(round(WEIGHTS[REC_IDX] * 100)), ticks=ticks_html(),
         mktbtns=mktbtns, fit_n=fit_n, fit_year=fv.MIN_YEAR,
-        odds=odds_table(rec["rows"], d["mkt"][DEFAULT_SOURCE], 16),
+        odds=odds_table(rec["rows"], d["mkt"][DEFAULT_SOURCE], 20),
         groups=groups_grid(rec["by_team"]),
         bracket=bracket(rec["chalk"], rec["by_team"]),
         worked=worked, rand=randomness_table(),
