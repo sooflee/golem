@@ -503,7 +503,7 @@ goals_B ~ Poisson( {base} &times; e^(&minus;{gamma}&times;(win_exp&minus;0.5)) )
 <section><h2><span class=n>4</span>The key step: measuring how random football is</h2>
 <p>The two numbers above ({base} and {gamma}) control <b>how much a rating edge
 really decides a match versus how much is luck</b>. Guess wrong and the model gets
-over-confident (a bank once put one team at 26% to win it all) or under-confident.
+over-confident or under-confident.
 So I didn't eyeball it &mdash; I <b>measured it against {fit_n:,} real
 internationals since {fit_year}</b>, letting the data pick the settings that make
 what <em>actually happened</em> most likely (<b>maximum likelihood</b>). The verdict on
