@@ -430,16 +430,15 @@ estimate each team's chance of lifting the trophy. The current favorite is
 <input type=range id=wslider min=0 max=100 step=1 value="{recpct}">
 <div class=ticks>{ticks}</div>
 <div class=ends><span>&larr; Our model (Elo)</span><span>Betting market &rarr; (% on market)</span></div>
-<p class=mut style="margin:.6em 0 0">Drag to reweight the forecast between our
-independent Elo model and the betting market. Every stop is a real model run.
-Watch teams the market and the model disagree on (e.g. Argentina) move the most.</p>
-<p class=mut style="margin:.7em 0 0">The default is <b>85% market / 15% model</b>.
-Why 15%, and not 0 or 50? It's a judgment, not a fitted number. Blending an
-independent model with the market usually helps a little (so the weight should be
-above zero), but the market knows more than our ratings (so it should stay small).
-We can't tune it precisely. That would need historical betting odds, which
-don't exist for past tournaments, so we chose a conservative value and built
-this slider, rather than ask you to take one number on faith.</p>
+<p class=mut style="margin:.6em 0 0">The slider reweights the forecast between the independent Elo model and the betting
+market. Each stop is a precomputed run, not an interpolation; teams on which the two
+sources disagree (Argentina, for instance) shift the most.</p>
+<p class=mut style="margin:.7em 0 0">The default is <b>85% market / 15% model</b>. The 15% is a judgment rather than a
+fitted value. Combining an independent model with the market tends to help at the
+margin, so the weight should be positive, but the market carries more information than
+the ratings alone, so it should stay small. The exact figure cannot be tuned without
+historical market prices, which do not exist for past tournaments; a deliberately
+conservative value is used, and the slider exposes the sensitivity directly.</p>
 </div>
 
 <section><h2>Title &amp; deep-run odds</h2><div id=oddsWrap>{odds}</div>

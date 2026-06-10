@@ -180,16 +180,15 @@ estimate each team's chance of lifting the trophy. The current favorite is
 <input type=range id=wslider min=0 max=100 step=1 value="85">
 <div class=ticks><span class="tk" data-i="0" style="left:calc(11px + 0.0000 * (100% - 22px))">0</span><span class="tk" data-i="1" style="left:calc(11px + 0.2500 * (100% - 22px))">25</span><span class="tk" data-i="2" style="left:calc(11px + 0.5000 * (100% - 22px))">50</span><span class="tk" data-i="3" style="left:calc(11px + 0.7000 * (100% - 22px))">70</span><span class="tk" data-i="4" style="left:calc(11px + 0.8000 * (100% - 22px))">80</span><span class="tk rec" data-i="5" style="left:calc(11px + 0.8500 * (100% - 22px))">85</span><span class="tk" data-i="6" style="left:calc(11px + 0.9000 * (100% - 22px))">90</span><span class="tk" data-i="7" style="left:calc(11px + 1.0000 * (100% - 22px))">100</span></div>
 <div class=ends><span>&larr; Our model (Elo)</span><span>Betting market &rarr; (% on market)</span></div>
-<p class=mut style="margin:.6em 0 0">Drag to reweight the forecast between our
-independent Elo model and the betting market. Every stop is a real model run.
-Watch teams the market and the model disagree on (e.g. Argentina) move the most.</p>
-<p class=mut style="margin:.7em 0 0">The default is <b>85% market / 15% model</b>.
-Why 15%, and not 0 or 50? It's a judgment, not a fitted number. Blending an
-independent model with the market usually helps a little (so the weight should be
-above zero), but the market knows more than our ratings (so it should stay small).
-We can't tune it precisely. That would need historical betting odds, which
-don't exist for past tournaments, so we chose a conservative value and built
-this slider, rather than ask you to take one number on faith.</p>
+<p class=mut style="margin:.6em 0 0">The slider reweights the forecast between the independent Elo model and the betting
+market. Each stop is a precomputed run, not an interpolation; teams on which the two
+sources disagree (Argentina, for instance) shift the most.</p>
+<p class=mut style="margin:.7em 0 0">The default is <b>85% market / 15% model</b>. The 15% is a judgment rather than a
+fitted value. Combining an independent model with the market tends to help at the
+margin, so the weight should be positive, but the market carries more information than
+the ratings alone, so it should stay small. The exact figure cannot be tuned without
+historical market prices, which do not exist for past tournaments; a deliberately
+conservative value is used, and the slider exposes the sensitivity directly.</p>
 </div>
 
 <section><h2>Title &amp; deep-run odds</h2><div id=oddsWrap><table class=odds><tr><th>#</th><th class=l>Team</th><th>Champion</th><th>Final</th><th>Semi</th><th>Quarter</th><th>R16</th><th>Market</th></tr><tr><td class=rank>1</td><td class=l><b>Spain</b></td><td class='prob circled'><div class="bar"><span style="width:19.3%;background:var(--ac)"></span></div><span class=cw><svg class=circ viewBox="0 0 120 56" preserveAspectRatio=none><path d="M98,9 C71,1 31,4 16,17 C4,28 8,46 41,52 C77,58 114,46 110,25 C107,11 86,6 67,8" fill=none stroke="#e23b3b" stroke-width=2.6 stroke-linecap=round/></svg>19.3%</span></td><td>29.5%</td><td>43.6%</td><td>56.3%</td><td>75.4%</td><td class=mkt>15.6%</td></tr><tr><td class=rank>2</td><td class=l><b>France</b></td><td class=prob><div class="bar"><span style="width:15.5%;background:var(--ac)"></span></div><span>15.5%</span></td><td>24.4%</td><td>38.2%</td><td>53.2%</td><td>73.3%</td><td class=mkt>15.4%</td></tr><tr><td class=rank>3</td><td class=l><b>Argentina</b></td><td class=prob><div class="bar"><span style="width:10.5%;background:var(--ac)"></span></div><span>10.5%</span></td><td>19.1%</td><td>31.8%</td><td>47.9%</td><td>64.3%</td><td class=mkt>8.3%</td></tr><tr><td class=rank>4</td><td class=l><b>England</b></td><td class=prob><div class="bar"><span style="width:9.3%;background:var(--ac)"></span></div><span>9.3%</span></td><td>17.0%</td><td>28.4%</td><td>45.0%</td><td>66.4%</td><td class=mkt>9.6%</td></tr><tr><td class=rank>5</td><td class=l><b>Portugal</b></td><td class=prob><div class="bar"><span style="width:9.2%;background:var(--ac)"></span></div><span>9.2%</span></td><td>16.9%</td><td>28.8%</td><td>45.4%</td><td>66.7%</td><td class=mkt>9.9%</td></tr><tr><td class=rank>6</td><td class=l><b>Brazil</b></td><td class=prob><div class="bar"><span style="width:7.0%;background:var(--ac)"></span></div><span>7.0%</span></td><td>13.2%</td><td>23.6%</td><td>39.3%</td><td>60.5%</td><td class=mkt>7.5%</td></tr><tr><td class=rank>7</td><td class=l><b>Germany</b></td><td class=prob><div class="bar"><span style="width:5.0%;background:var(--ac)"></span></div><span>5.0%</span></td><td>10.3%</td><td>19.8%</td><td>33.2%</td><td>60.7%</td><td class=mkt>5.6%</td></tr><tr><td class=rank>8</td><td class=l><b>Netherlands</b></td><td class=prob><div class="bar"><span style="width:3.9%;background:var(--ac)"></span></div><span>3.9%</span></td><td>8.6%</td><td>17.3%</td><td>33.1%</td><td>51.9%</td><td class=mkt>4.4%</td></tr></table></div>
