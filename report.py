@@ -219,23 +219,23 @@ def worked_example(elo, a="Spain", b="Croatia"):
                 best, bestp = (x, y), p
     return f"""
 <p><b>{esc(a)}</b> (rating {ea:.0f}) vs <b>{esc(b)}</b> (rating {eb:.0f}),
-neutral venue. Exactly what the engine does:</p>
-<p class=step>Step A &mdash; rating gap</p>
+neutral venue. Here's what the engine does.</p>
+<p class=step>Step A, the rating gap</p>
 <div class=formula>{ea:.0f} &minus; {eb:.0f} = {gap:.0f} points in {esc(a)}'s favor</div>
-<p class=step>Step B &mdash; turn the gap into a win expectancy</p>
+<p class=step>Step B, turn the gap into a win expectancy</p>
 <div class=formula>win_exp = 1 / (1 + 10^(&minus;{gap:.0f}/400)) = {we:.3f}
 &rarr; on strength alone, {esc(a)} is about a {100*we:.0f}% favorite</div>
-<p class=step>Step C &mdash; turn that into expected goals</p>
+<p class=step>Step C, turn that into expected goals</p>
 <div class=formula>&lambda;({esc(a)})  = {base} &times; e^( {g}&times;({we:.3f}&minus;0.5)) = {la:.2f} goals
 &lambda;({esc(b)}) = {base} &times; e^(&minus;{g}&times;({we:.3f}&minus;0.5)) = {lb:.2f} goals</div>
-<p class=step>Step D &mdash; roll the dice (Poisson + draw correction)</p>
+<p class=step>Step D, roll the dice (Poisson + draw correction)</p>
 <div class=stats>
 <div class=stat><b>{pct(w,0)}</b><small>{esc(a)} win</small></div>
 <div class=stat><b>{pct(d,0)}</b><small>draw</small></div>
 <div class=stat><b>{pct(l,0)}</b><small>{esc(b)} win</small></div>
 </div>
-<p class=mut>Most likely exact score: {esc(a)} {best[0]}&ndash;{best[1]} {esc(b)}.
-{esc(b)} still avoids defeat {pct(d+l,0)} of the time &mdash; that's the
+<p class=mut>The most likely score is {esc(a)} {best[0]}&ndash;{best[1]} {esc(b)}.
+{esc(b)} still avoids defeat {pct(d+l,0)} of the time. That's the
 randomness from Step&nbsp;4. A tournament is just this, 103 times, repeated many
 times over.</p>
 """
@@ -415,7 +415,7 @@ BODY = """
 <header>
 <div class=kick>Forecast &middot; World Cup 2026</div>
 <h1>Who will win the 2026 World Cup?</h1>
-<p class=dek>Nobody really knows &mdash; it only happens once, and luck gets a big
+<p class=dek>Nobody really knows. It only happens once, and luck gets a big
 vote. So I had a computer play the whole thing {sims:,} times, leaning on the
 betting market and 25 years of results, just to see who keeps walking away with
 the trophy. Right now, that's <b>&#127942; <span id=champName>{champ}</span></b>.</p>
@@ -433,11 +433,11 @@ the trophy. Right now, that's <b>&#127942; <span id=champName>{champ}</span></b>
 independent Elo model and the betting market. Every stop is a real model run.
 Watch teams the market and the model disagree on (e.g. Argentina) move the most.</p>
 <p class=mut style="margin:.7em 0 0">The default is <b>85% market / 15% model</b>.
-Why 15%, and not 0 or 50? It's a judgment, not a fitted number: blending an
+Why 15%, and not 0 or 50? It's a judgment, not a fitted number. Blending an
 independent model with the market usually helps a little (so the weight should be
 above zero), but the market knows more than our ratings (so it should stay small).
-We can't tune it precisely &mdash; that would need historical betting odds, which
-don't exist for past tournaments &mdash; so we chose a conservative value and built
+We can't tune it precisely. That would need historical betting odds, which
+don't exist for past tournaments, so we chose a conservative value and built
 this slider, rather than ask you to take one number on faith.</p>
 </div>
 
@@ -447,10 +447,10 @@ this slider, rather than ask you to take one number on faith.</p>
 simulated probability of reaching each round at the current slider setting. The
 <span style="color:#e23b3b;font-weight:700">red circle</span> marks the model's
 most likely champion. At blends below 100% the model can read above or below the
-Market column &mdash; that's its independent (Elo) view disagreeing with the
+Market column. That's its independent (Elo) view disagreeing with the
 bookmakers.</p></section>
 
-<section><details><summary><h2>Group stage &mdash; predicted top two</h2></summary>
+<section><details><summary><h2>Group stage, the predicted top two</h2></summary>
 <div id=groupsWrap>{groups}</div>
 <p class=mut>Highlighted = advance. The 8 best third-placed teams also qualify.</p>
 </details></section>
@@ -463,14 +463,14 @@ bookmakers.</p></section>
 
 <div class=divider id=how><span>The method</span><h2>How it works</h2></div>
 
-<section><h2><span class=n>0</span>The big idea: play the tournament 100,000 times</h2>
-<p>Here's the problem: the World Cup happens exactly once, and on any given day the
+<section><h2><span class=n>0</span>The big idea is to play the tournament 100,000 times</h2>
+<p>Here's the problem. The World Cup happens exactly once, and on any given day the
 better team loses all the time. You can't out-predict that. So I stopped trying to,
 and asked a question you actually <em>can</em> answer:
 <b>if this exact tournament were replayed thousands of times, how often would each
 team win?</b></p>
-<p>That's a <b>Monte Carlo simulation</b>. Simulate one match realistically &mdash;
-with the right randomness &mdash; and you can play all 103 matches (we skip the
+<p>That's a <b>Monte Carlo simulation</b>. Simulate one match realistically,
+with the right randomness, and you can play all 103 matches (we skip the
 dead-rubber 3rd-place playoff), repeat {sims:,}
 times, and just <em>count</em>. Win 16,400 of 100,000 &rarr; a 16.4% title chance.</p>
 <div class=note><b>The whole challenge</b> is three things: (1) how good is each
@@ -478,7 +478,7 @@ team, (2) how "how good" becomes a result <em>including luck</em>, and (3) the
 tournament structure. The rest is counting.</div></section>
 
 <section><h2><span class=n>1</span>How good is each team? (Elo ratings)</h2>
-<p>Every team gets an <b>Elo rating</b> &mdash; the system invented for chess. You
+<p>Every team gets an <b>Elo rating</b>, the system invented for chess. You
 gain points for winning (more for beating a strong team), and the <em>gap</em>
 between two ratings predicts the result, built so a <b>400-point gap &asymp; a
 10-to-1 favorite</b>:</p>
@@ -489,64 +489,62 @@ Elo on different scales. This formula always maps a <em>gap</em> to the same
 probability, so the model works with any ratings.</div></section>
 
 <section><h2><span class=n>2</span>Simulating one match</h2>
-<p>I simulate the actual <b>scoreline</b>, not just who won &mdash; the group stage
+<p>I simulate the actual <b>scoreline</b>, not just who won. The group stage
 comes down to goal difference, so goals matter. Each side's win-expectancy becomes
 an expected number of goals, and the score is a random draw from a <b>Poisson
-distribution</b> (the go-to model for counting rare, scattered events &mdash;
-goals, raindrops, typos on a page):</p>
+distribution</b> (the go-to model for counting rare, scattered events like
+goals, raindrops, or typos on a page):</p>
 <div class=formula>goals_A ~ Poisson( {base} &times; e^( {gamma}&times;(win_exp&minus;0.5)) )
 goals_B ~ Poisson( {base} &times; e^(&minus;{gamma}&times;(win_exp&minus;0.5)) )</div>
 <p>Two even teams average {base} each; a favorite's average rises. The
 <b>Dixon-Coles correction</b> nudges low scores so the draw rate matches reality.</p>
-<h3>Let's run one: Spain vs Croatia</h3>{worked}</section>
+<h3>Let's run one, Spain vs Croatia</h3>{worked}</section>
 
-<section><h2><span class=n>3</span>The key step: measuring how random football is</h2>
+<section><h2><span class=n>3</span>The key step is measuring how random football is</h2>
 <p>The two numbers above ({base} and {gamma}) control <b>how much a rating edge
 really decides a match versus how much is luck</b>. Guess wrong and the model gets
 over-confident or under-confident.
-So I didn't eyeball it &mdash; I <b>measured it against {fit_n:,} real
+So I didn't eyeball it. I <b>measured it against {fit_n:,} real
 internationals since {fit_year}</b>, letting the data pick the settings that make
 what <em>actually happened</em> most likely (<b>maximum likelihood</b>). The verdict on
 football's built-in randomness:</p>
 {rand}
 <div class=note><b>This is why upsets are common.</b> Even a clear favorite loses
 or draws ~40% of single games. A high title number is only justified if it comes
-from a genuine <em>rating gap</em> &mdash; not from pretending matches are more
+from a genuine <em>rating gap</em>, not from pretending matches are more
 predictable than {fit_n:,} games show. (A model that reaches, say, 26% by
 under-estimating this randomness is over-confident; here the randomness is fit to
-the data, so any concentration comes from the gaps themselves &mdash; which is why
+the data, so any concentration comes from the gaps themselves, which is why
 the slider's pure-model end can be high yet still honest.)</div></section>
 
 <section><h2><span class=n>4</span>Trusting the betting market (calibration &amp; the slider)</h2>
-<p>The <b>betting market</b> is the best-calibrated forecast there is &mdash;
-millions of people with real money, reacting to injuries and news. You can
-calibrate to either market (the buttons above the slider) &mdash; a
+<p>The <b>betting market</b> is the best-calibrated forecast we have, with millions of people betting real money and reacting to injuries and news. You can
+calibrate to either market using the buttons above the slider, whether a
 <b>sportsbook</b> futures board (ESPN) or the <b>Kalshi exchange</b>. Their prices
-sum to over 100% &mdash; that overage (the "vig",
+sum to over 100%; that overage (the "vig",
 ~{vig:.0f}% for the sportsbook but only ~{vig_k:.0f}% on the peer-to-peer
 exchange) we strip out. Then we
-<b>calibrate</b>: nudge each team's rating until <em>our</em> simulated title odds
+<b>calibrate</b> by nudging each team's rating until <em>our</em> simulated title odds
 match that blended target (market + our model, at the slider's mix).</p>
 <p>The slider at the top blends the two: <b>0% = our pure Elo model</b> (free to
 disagree with the market, Goldman-style), <b>100% = the pure market</b>. The
-recommended default is <b>85% market / 15% model</b> &mdash; lean on the market
+recommended default is <b>85% market / 15% model</b>, which leans on the market
 (historically the best single forecast) while keeping the model as a hedge.</p></section>
 
 <section><h2>What it can't do (being honest)</h2>
 <ul>
-<li>Ratings are fixed at kickoff &mdash; no reaction to a mid-tournament injury.</li>
+<li>Ratings are fixed at kickoff, with no reaction to a mid-tournament injury.</li>
 <li>Ratings are a single pre-tournament snapshot from one provider
-(eloratings.net) — a different rating system would shift the edges somewhat.</li>
+(eloratings.net), and a different rating system would shift the edges somewhat.</li>
 <li>Group tiebreakers are simplified versus FIFA's full head-to-head rules.</li>
-<li>We validated the engine and randomness, but not the exact blend weight &mdash;
-that needs historical betting odds we don't have. (Hence the slider: judge for yourself.)</li>
+<li>We validated the engine and randomness, but not the exact blend weight, which needs historical betting odds we don't have. (Hence the slider: judge for yourself.)</li>
 </ul>
 <p class=mut>Reproduce: <code>python3 run.py</code>,
 <code>python3 fit_variance.py</code>, <code>python3 backtest.py</code>.</p></section>
 
 <footer>Generated {date}. Sources: bookmaker futures, World Football Elo, FIFA
 fixtures, the martj42 international-results dataset.<br>
-A model, not a guarantee &mdash; the point is that upsets happen.</footer>
+A model, not a guarantee. The point is that upsets happen.</footer>
 """
 
 
@@ -665,7 +663,7 @@ def build_page(d):
 
     return (f"<!doctype html><html lang=en><head><meta charset=utf-8>"
             f"<meta name=viewport content=\"width=device-width,initial-scale=1\">"
-            f"<title>2026 World Cup &mdash; Model Forecast</title>"
+            f"<title>2026 World Cup Model Forecast</title>"
             f"<style>{STYLE}</style></head><body><div class=wrap>{body}"
             f"</div>{datajs}{SCRIPT}</body></html>")
 
